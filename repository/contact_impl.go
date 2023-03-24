@@ -1,9 +1,12 @@
 package repository
 
 import (
+	"contact-go/helper"
 	"contact-go/model"
 	"errors"
 )
+
+const jsonFile = "contact/contact.json"
 
 type contactRepository struct{}
 
@@ -11,12 +14,17 @@ func NewContactRepository() ContactRepository {
 	return new(contactRepository)
 }
 
-func (repo *contactRepository) List() []model.Contact {
-	return model.Contacts
+func (repo *contactRepository) List() ([]model.Contact, error) {
+	err := helper.DecodeJSON(jsonFile, &model.Contacts)
+	if err != nil {
+		return []model.Contact{}, err
+	}
+
+	return model.Contacts, nil
 }
 
-func (repo *contactRepository) getLastID() int64 {
-	contacts := repo.List()
+func (repo *contactRepository) getLastID() (int64, error) {
+	contacts, err := repo.List()
 
 	var tempID int64
 	for _, v := range contacts {
@@ -24,11 +32,14 @@ func (repo *contactRepository) getLastID() int64 {
 			tempID = v.ID
 		}
 	}
-	return tempID
+	return tempID, err
 }
 
 func (repo *contactRepository) getIndexByID(id int64) (int, error) {
-	contacts := repo.List()
+	contacts, err := repo.List()
+	if err != nil {
+		return -1, err
+	}
 
 	for i, v := range contacts {
 		if id == v.ID {
@@ -39,43 +50,76 @@ func (repo *contactRepository) getIndexByID(id int64) (int, error) {
 	return -1, errors.New("ID tidak ditemukan")
 }
 
-func (repo *contactRepository) Add(req model.ContactRequest) (model.Contact, error) {
-	id := repo.getLastID()
-
-	contact := model.Contact{
-		ID:     id + 1,
-		Name:   req.Name,
-		NoTelp: req.NoTelp,
+func (repo *contactRepository) Add(contact *model.Contact) (*model.Contact, error) {
+	id, err := repo.getLastID()
+	if err != nil {
+		return &model.Contact{}, err
 	}
 
-	model.Contacts = append(model.Contacts, contact)
+	newContact := contact
+	newContact.ID = id + 1
 
-	return contact, nil
+	model.Contacts = append(model.Contacts, *newContact)
+
+	err = helper.EncodeJSON(jsonFile, &model.Contacts)
+	if err != nil {
+		return &model.Contact{}, err
+	}
+
+	return newContact, nil
 }
 
-func (repo *contactRepository) Update(id int64, req model.ContactRequest) (model.Contact, error) {
-	contacts := repo.List()
-	index, err := repo.getIndexByID(id)
-
+func (repo *contactRepository) Detail(id int64) (*model.Contact, error) {
+	contacts, err := repo.List()
 	if err != nil {
-		return model.Contact{}, err
+		return &model.Contact{}, err
 	}
 
-	contact := &contacts[index]
-	contact.Name = req.Name
-	contact.NoTelp = req.NoTelp
+	index, err := repo.getIndexByID(id)
+	if err != nil {
+		return &model.Contact{}, err
+	}
 
-	return *contact, nil
+	contact := contacts[index]
+
+	return &contact, nil
+}
+
+func (repo *contactRepository) Update(id int64, contact *model.Contact) (*model.Contact, error) {
+	contacts, err := repo.List()
+	if err != nil {
+		return &model.Contact{}, err
+	}
+
+	index, err := repo.getIndexByID(id)
+	if err != nil {
+		return &model.Contact{}, err
+	}
+
+	updatedContact := &contacts[index]
+	updatedContact.Name = contact.Name
+	updatedContact.NoTelp = contact.NoTelp
+
+	err = helper.EncodeJSON(jsonFile, &model.Contacts)
+	if err != nil {
+		return &model.Contact{}, err
+	}
+
+	return updatedContact, nil
 }
 
 func (repo *contactRepository) Delete(id int64) error {
 	index, err := repo.getIndexByID(id)
-
 	if err != nil {
 		return err
 	}
 
 	model.Contacts = append(model.Contacts[:index], model.Contacts[index+1:]...)
+
+	err = helper.EncodeJSON(jsonFile, &model.Contacts)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
