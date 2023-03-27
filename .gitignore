@@ -26,4 +26,4 @@ vendor
 .idea
 tmp
 coverage
-data
+data/contact.json
