@@ -1,12 +1,13 @@
 package repository
 
 import (
-	"contact-go/helper"
 	"contact-go/model"
+	"encoding/json"
 	"errors"
+	"os"
 )
 
-const jsonFile = "contact/contact.json"
+const jsonFile = "data/contact.json"
 
 type contactJsonRepository struct{}
 
@@ -14,8 +15,28 @@ func NewContactJsonRepository() ContactRepository {
 	return new(contactJsonRepository)
 }
 
+func (repo *contactJsonRepository) encodeJSON(path string, contacts *[]model.Contact) error {
+	writer, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	encoder := json.NewEncoder(writer)
+	encoder.Encode(&contacts)
+	return nil
+}
+
+func (repo *contactJsonRepository) decodeJSON(path string, contacts *[]model.Contact) error {
+	reader, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+	decoder := json.NewDecoder(reader)
+	decoder.Decode(&contacts)
+	return nil
+}
+
 func (repo *contactJsonRepository) List() ([]model.Contact, error) {
-	err := helper.DecodeJSON(jsonFile, &model.Contacts)
+	err := repo.decodeJSON(jsonFile, &model.Contacts)
 	if err != nil {
 		return []model.Contact{}, err
 	}
@@ -61,7 +82,7 @@ func (repo *contactJsonRepository) Add(contact *model.Contact) (*model.Contact, 
 
 	model.Contacts = append(model.Contacts, *newContact)
 
-	err = helper.EncodeJSON(jsonFile, &model.Contacts)
+	err = repo.encodeJSON(jsonFile, &model.Contacts)
 	if err != nil {
 		return &model.Contact{}, err
 	}
@@ -100,7 +121,7 @@ func (repo *contactJsonRepository) Update(id int64, contact *model.Contact) (*mo
 	updatedContact.Name = contact.Name
 	updatedContact.NoTelp = contact.NoTelp
 
-	err = helper.EncodeJSON(jsonFile, &model.Contacts)
+	err = repo.encodeJSON(jsonFile, &model.Contacts)
 	if err != nil {
 		return &model.Contact{}, err
 	}
@@ -116,7 +137,7 @@ func (repo *contactJsonRepository) Delete(id int64) error {
 
 	model.Contacts = append(model.Contacts[:index], model.Contacts[index+1:]...)
 
-	err = helper.EncodeJSON(jsonFile, &model.Contacts)
+	err = repo.encodeJSON(jsonFile, &model.Contacts)
 	if err != nil {
 		return err
 	}

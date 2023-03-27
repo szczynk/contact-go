@@ -7,7 +7,9 @@ import (
 )
 
 type Config struct {
+	Port    string `mapstructure:"port"`
 	Storage string `mapstructure:"storage"`
+	Mode    string `mapstructure:"mode"`
 }
 
 func LoadConfig() (*Config, error) {

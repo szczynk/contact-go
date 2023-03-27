@@ -9,6 +9,6 @@ type Contact struct {
 var Contacts []Contact
 
 type ContactRequest struct {
-	Name   string
-	NoTelp string
+	Name   string `json:"name"`
+	NoTelp string `json:"no_telp"`
 }
