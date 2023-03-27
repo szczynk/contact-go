@@ -7,8 +7,10 @@ import (
 )
 
 func main() {
-	contactRepo := repository.NewContactRepository()
-	contactUC := usecase.NewContactUsecase(contactRepo)
+	// contactRepo := repository.NewContactRepository()
+	// contactUC := usecase.NewContactUsecase(contactRepo)
+	contactJsonRepo := repository.NewContactJsonRepository()
+	contactUC := usecase.NewContactUsecase(contactJsonRepo)
 	contactHandler := handler.NewContactHandler(contactUC)
 
 	handler.Menu(contactHandler)
