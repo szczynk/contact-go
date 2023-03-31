@@ -2,6 +2,7 @@ package main
 
 import (
 	"contact-go/config"
+	"contact-go/config/db"
 	"contact-go/handler"
 	"contact-go/repository"
 	"contact-go/usecase"
@@ -15,16 +16,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	var contactRepo repository.ContactRepository
-
-	switch config.Storage {
-	case "json":
-		contactRepo = repository.NewContactJsonRepository()
-	default:
-		contactRepo = repository.NewContactRepository()
-	}
-
-	contactUC := usecase.NewContactUsecase(contactRepo)
+	contactUC := createContactUsecase(config)
 
 	switch config.Mode {
 	case "http":
@@ -33,11 +25,32 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-
 	default:
 		contactCLIHandler := handler.NewContactHandler(contactUC)
 		handler.Menu(contactCLIHandler)
 	}
+}
+
+func createContactUsecase(config *config.Config) usecase.ContactUsecase {
+	var contactRepo repository.ContactRepository
+	switch config.Storage {
+	case "sql":
+		switch config.Database.Driver {
+		case "mysql":
+			db, err := db.NewMysqlDatabase(config)
+			if err != nil {
+				log.Fatal(err)
+			}
+			contactRepo = repository.NewContactMysqlRepository(db)
+		default:
+			log.Fatalln("database driver not existed")
+		}
+	case "json":
+		contactRepo = repository.NewContactJsonRepository()
+	default:
+		contactRepo = repository.NewContactRepository()
+	}
+	return usecase.NewContactUsecase(contactRepo)
 }
 
 func NewServer(config *config.Config, handler handler.ContactHTTPHandler) error {
