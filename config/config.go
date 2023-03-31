@@ -7,9 +7,15 @@ import (
 )
 
 type Config struct {
-	Port    string `mapstructure:"port"`
-	Storage string `mapstructure:"storage"`
-	Mode    string `mapstructure:"mode"`
+	Port     string   `mapstructure:"port"`
+	Storage  string   `mapstructure:"storage"`
+	Mode     string   `mapstructure:"mode"`
+	Database Database `mapstructure:"db"`
+}
+
+type Database struct {
+	Driver string `mapstructure:"driver"`
+	URL    string `mapstructure:"url"`
 }
 
 func LoadConfig() (*Config, error) {
