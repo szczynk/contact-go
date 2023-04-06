@@ -18,7 +18,10 @@ func NewContactHandler(contactUC usecase.ContactUsecase) ContactHandler {
 }
 
 func (handler *contactHandler) List() {
-	helper.ClearTerminal()
+	err := helper.ClearTerminal()
+	if err != nil {
+		fmt.Println(err)
+	}
 
 	contacts, err := handler.ContactUC.List()
 
@@ -37,7 +40,10 @@ func (handler *contactHandler) List() {
 }
 
 func (handler *contactHandler) Add() {
-	helper.ClearTerminal()
+	err := helper.ClearTerminal()
+	if err != nil {
+		fmt.Println(err)
+	}
 
 	fmt.Println("Add new contact")
 
@@ -71,7 +77,10 @@ func (handler *contactHandler) Add() {
 }
 
 func (handler *contactHandler) Detail() {
-	helper.ClearTerminal()
+	err := helper.ClearTerminal()
+	if err != nil {
+		fmt.Println(err)
+	}
 
 	fmt.Println("Contact Detail")
 
@@ -93,7 +102,10 @@ func (handler *contactHandler) Detail() {
 }
 
 func (handler *contactHandler) Update() {
-	helper.ClearTerminal()
+	err := helper.ClearTerminal()
+	if err != nil {
+		fmt.Println(err)
+	}
 
 	fmt.Println("Update a contact")
 
@@ -135,7 +147,10 @@ func (handler *contactHandler) Update() {
 }
 
 func (handler *contactHandler) Delete() {
-	helper.ClearTerminal()
+	err := helper.ClearTerminal()
+	if err != nil {
+		fmt.Println(err)
+	}
 
 	fmt.Println("Delete a contact")
 
@@ -147,7 +162,7 @@ func (handler *contactHandler) Delete() {
 		return
 	}
 
-	err := handler.ContactUC.Delete(id)
+	err = handler.ContactUC.Delete(id)
 	if err != nil {
 		fmt.Println(err.Error())
 	} else {

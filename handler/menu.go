@@ -6,7 +6,11 @@ import (
 )
 
 func Menu(handler ContactHandler) {
-	helper.ClearTerminal()
+	err := helper.ClearTerminal()
+	if err != nil {
+		fmt.Println(err)
+	}
+
 	helper.ShowMenuList()
 
 	for {
@@ -14,13 +18,19 @@ func Menu(handler ContactHandler) {
 		fmt.Scanln(&menu)
 
 		if menu == 6 {
-			helper.ClearTerminal()
+			err := helper.ClearTerminal()
+			if err != nil {
+				fmt.Println(err)
+			}
 			break
 		}
 
 		switch menu {
 		default: // case 0 atau selain 0
-			helper.ClearTerminal()
+			err := helper.ClearTerminal()
+			if err != nil {
+				fmt.Println(err)
+			}
 			helper.ShowMenuList()
 		case 1:
 			handler.List()

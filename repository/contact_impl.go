@@ -1,8 +1,8 @@
 package repository
 
 import (
+	"contact-go/helper"
 	"contact-go/model"
-	"errors"
 )
 
 type contactRepository struct{}
@@ -39,13 +39,13 @@ func (repo *contactRepository) getIndexByID(id int64) (int, error) {
 		}
 	}
 
-	return -1, errors.New("ID tidak ditemukan")
+	return -1, helper.NewAppError(helper.ErrContactNotFound)
 }
 
 func (repo *contactRepository) Add(contact *model.Contact) (*model.Contact, error) {
 	id, err := repo.getLastID()
 	if err != nil {
-		return &model.Contact{}, err
+		return nil, err
 	}
 
 	newContact := contact
@@ -59,12 +59,12 @@ func (repo *contactRepository) Add(contact *model.Contact) (*model.Contact, erro
 func (repo *contactRepository) Detail(id int64) (*model.Contact, error) {
 	contacts, err := repo.List()
 	if err != nil {
-		return &model.Contact{}, err
+		return nil, err
 	}
 
 	index, err := repo.getIndexByID(id)
 	if err != nil {
-		return &model.Contact{}, err
+		return nil, err
 	}
 
 	contact := contacts[index]
@@ -75,12 +75,12 @@ func (repo *contactRepository) Detail(id int64) (*model.Contact, error) {
 func (repo *contactRepository) Update(id int64, contact *model.Contact) (*model.Contact, error) {
 	contacts, err := repo.List()
 	if err != nil {
-		return &model.Contact{}, err
+		return nil, err
 	}
 
 	index, err := repo.getIndexByID(id)
 	if err != nil {
-		return &model.Contact{}, err
+		return nil, err
 	}
 
 	updatedContact := &contacts[index]

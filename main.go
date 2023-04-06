@@ -93,6 +93,6 @@ func NewServer(config *config.Config, handler handler.ContactHTTPHandler) error 
 	if err != nil {
 		return err
 	}
-	log.Println("live on http://localhost:8080")
+	log.Printf("live on http://localhost:%s", config.Port)
 	return nil
 }

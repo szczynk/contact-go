@@ -1,10 +1,10 @@
 package handler
 
 import (
+	"contact-go/helper"
 	"contact-go/model"
 	"contact-go/usecase"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -23,14 +23,13 @@ func NewContactHTTPHandler(contactUC usecase.ContactUsecase) ContactHTTPHandler 
 func (handler *contactHTTPHandler) List(w http.ResponseWriter, r *http.Request) {
 	contacts, err := handler.ContactUC.List()
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		_ = helper.NewJsonResponse(w, http.StatusInternalServerError, err.Error(), nil)
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	err = json.NewEncoder(w).Encode(&contacts)
+	err = helper.NewJsonResponse(w, http.StatusOK, "OK", contacts)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		_ = helper.NewJsonResponse(w, http.StatusInternalServerError, err.Error(), nil)
 		return
 	}
 }
@@ -57,13 +56,23 @@ func (handler *contactHTTPHandler) Add(w http.ResponseWriter, r *http.Request) {
 	var contactRequest model.ContactRequest
 	err := json.NewDecoder(r.Body).Decode(&contactRequest)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		_ = helper.NewJsonResponse(w, http.StatusBadRequest, err.Error(), nil)
+		return
+	}
+
+	if contactRequest.Name == "" {
+		_ = helper.NewJsonResponse(w, http.StatusBadRequest, helper.ErrContactNameNotValid, nil)
+		return
+	}
+
+	if contactRequest.NoTelp == "" {
+		_ = helper.NewJsonResponse(w, http.StatusBadRequest, helper.ErrContactNoTelpNotValid, nil)
 		return
 	}
 
 	contact, err := handler.ContactUC.Add(&contactRequest)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		_ = helper.NewJsonResponse(w, http.StatusInternalServerError, err.Error(), nil)
 		return
 	}
 
@@ -71,10 +80,9 @@ func (handler *contactHTTPHandler) Add(w http.ResponseWriter, r *http.Request) {
 	// w.WriteHeader(http.StatusOK)
 	// w.Write([]byte(msg))
 
-	w.WriteHeader(http.StatusOK)
-	err = json.NewEncoder(w).Encode(&contact)
+	err = helper.NewJsonResponse(w, http.StatusOK, "OK", contact)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		_ = helper.NewJsonResponse(w, http.StatusInternalServerError, err.Error(), nil)
 		return
 	}
 }
@@ -82,26 +90,29 @@ func (handler *contactHTTPHandler) Add(w http.ResponseWriter, r *http.Request) {
 func (handler *contactHTTPHandler) Detail(w http.ResponseWriter, r *http.Request) {
 	idStr := strings.TrimPrefix(r.URL.Path, "/contacts/")
 	if idStr == "" {
-		http.Error(w, "Invalid ID.", http.StatusBadRequest)
+		_ = helper.NewJsonResponse(w, http.StatusBadRequest, helper.ErrContactIdNotValid, nil)
 		return
 	}
 
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		http.Error(w, "Invalid ID.", http.StatusBadRequest)
+		_ = helper.NewJsonResponse(w, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 
 	contact, err := handler.ContactUC.Detail(int64(id))
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		if appErr, ok := err.(*helper.AppError); ok {
+			_ = helper.NewJsonResponse(w, http.StatusNotFound, appErr.Message, nil)
+		} else {
+			_ = helper.NewJsonResponse(w, http.StatusInternalServerError, err.Error(), nil)
+		}
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	err = json.NewEncoder(w).Encode(&contact)
+	err = helper.NewJsonResponse(w, http.StatusOK, "OK", contact)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		_ = helper.NewJsonResponse(w, http.StatusInternalServerError, err.Error(), nil)
 		return
 	}
 }
@@ -109,33 +120,32 @@ func (handler *contactHTTPHandler) Detail(w http.ResponseWriter, r *http.Request
 func (handler *contactHTTPHandler) Update(w http.ResponseWriter, r *http.Request) {
 	idStr := strings.TrimPrefix(r.URL.Path, "/contacts/")
 	if idStr == "" {
-		http.Error(w, "Invalid ID.", http.StatusBadRequest)
+		_ = helper.NewJsonResponse(w, http.StatusBadRequest, helper.ErrContactIdNotValid, nil)
 		return
 	}
 
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		http.Error(w, "Invalid ID.", http.StatusBadRequest)
+		_ = helper.NewJsonResponse(w, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 
 	var contactRequest model.ContactRequest
 	err = json.NewDecoder(r.Body).Decode(&contactRequest)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		_ = helper.NewJsonResponse(w, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 
 	contact, err := handler.ContactUC.Update(int64(id), &contactRequest)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		_ = helper.NewJsonResponse(w, http.StatusInternalServerError, err.Error(), nil)
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	err = json.NewEncoder(w).Encode(&contact)
+	err = helper.NewJsonResponse(w, http.StatusOK, "OK", contact)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		_ = helper.NewJsonResponse(w, http.StatusInternalServerError, err.Error(), nil)
 		return
 	}
 }
@@ -143,23 +153,25 @@ func (handler *contactHTTPHandler) Update(w http.ResponseWriter, r *http.Request
 func (handler *contactHTTPHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	idStr := strings.TrimPrefix(r.URL.Path, "/contacts/")
 	if idStr == "" {
-		http.Error(w, "Invalid ID.", http.StatusBadRequest)
+		_ = helper.NewJsonResponse(w, http.StatusBadRequest, helper.ErrContactIdNotValid, nil)
 		return
 	}
 
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		http.Error(w, "Invalid ID.", http.StatusBadRequest)
+		_ = helper.NewJsonResponse(w, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 
 	err = handler.ContactUC.Delete(int64(id))
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		_ = helper.NewJsonResponse(w, http.StatusInternalServerError, err.Error(), nil)
 		return
 	}
 
-	msg := fmt.Sprintf(`{ "message":"Berhasil delete contact with id %d" }`, id)
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(msg))
+	err = helper.NewJsonResponse(w, http.StatusOK, "OK", nil)
+	if err != nil {
+		_ = helper.NewJsonResponse(w, http.StatusInternalServerError, err.Error(), nil)
+		return
+	}
 }

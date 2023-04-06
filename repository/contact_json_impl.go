@@ -1,9 +1,9 @@
 package repository
 
 import (
+	"contact-go/helper"
 	"contact-go/model"
 	"encoding/json"
-	"errors"
 	"os"
 )
 
@@ -20,8 +20,13 @@ func (repo *contactJsonRepository) encodeJSON(path string, contacts *[]model.Con
 	if err != nil {
 		return err
 	}
+	defer writer.Close()
+
 	encoder := json.NewEncoder(writer)
-	encoder.Encode(&contacts)
+	err = encoder.Encode(&contacts)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -30,8 +35,13 @@ func (repo *contactJsonRepository) decodeJSON(path string, contacts *[]model.Con
 	if err != nil {
 		return err
 	}
+	defer reader.Close()
+
 	decoder := json.NewDecoder(reader)
-	decoder.Decode(&contacts)
+	err = decoder.Decode(&contacts)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -68,13 +78,13 @@ func (repo *contactJsonRepository) getIndexByID(id int64) (int, error) {
 		}
 	}
 
-	return -1, errors.New("ID tidak ditemukan")
+	return -1, helper.NewAppError(helper.ErrContactNotFound)
 }
 
 func (repo *contactJsonRepository) Add(contact *model.Contact) (*model.Contact, error) {
 	id, err := repo.getLastID()
 	if err != nil {
-		return &model.Contact{}, err
+		return nil, err
 	}
 
 	newContact := contact
@@ -84,7 +94,7 @@ func (repo *contactJsonRepository) Add(contact *model.Contact) (*model.Contact, 
 
 	err = repo.encodeJSON(jsonFile, &model.Contacts)
 	if err != nil {
-		return &model.Contact{}, err
+		return nil, err
 	}
 
 	return newContact, nil
@@ -93,12 +103,12 @@ func (repo *contactJsonRepository) Add(contact *model.Contact) (*model.Contact, 
 func (repo *contactJsonRepository) Detail(id int64) (*model.Contact, error) {
 	contacts, err := repo.List()
 	if err != nil {
-		return &model.Contact{}, err
+		return nil, err
 	}
 
 	index, err := repo.getIndexByID(id)
 	if err != nil {
-		return &model.Contact{}, err
+		return nil, err
 	}
 
 	contact := contacts[index]
@@ -109,12 +119,12 @@ func (repo *contactJsonRepository) Detail(id int64) (*model.Contact, error) {
 func (repo *contactJsonRepository) Update(id int64, contact *model.Contact) (*model.Contact, error) {
 	contacts, err := repo.List()
 	if err != nil {
-		return &model.Contact{}, err
+		return nil, err
 	}
 
 	index, err := repo.getIndexByID(id)
 	if err != nil {
-		return &model.Contact{}, err
+		return nil, err
 	}
 
 	updatedContact := &contacts[index]
@@ -123,7 +133,7 @@ func (repo *contactJsonRepository) Update(id int64, contact *model.Contact) (*mo
 
 	err = repo.encodeJSON(jsonFile, &model.Contacts)
 	if err != nil {
-		return &model.Contact{}, err
+		return nil, err
 	}
 
 	return updatedContact, nil
