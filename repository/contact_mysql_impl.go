@@ -16,6 +16,12 @@ func NewContactMysqlRepository(db *sql.DB) ContactRepository {
 	}
 }
 
+// db.ExecContext(...) function is used for executing SQL statements 
+// that do not return any rows, such as INSERT, UPDATE, and DELETE statements.
+
+// On the other hand, the db.QueryRowContext(...) function is used for 
+// executing SQL queries that return a single row of result set.
+
 func (repo *contactMysqlRepository) List() ([]model.Contact, error) {
 	var contacts []model.Contact
 	var contact model.Contact
