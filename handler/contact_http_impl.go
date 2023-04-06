@@ -72,7 +72,8 @@ func (handler *contactHTTPHandler) Add(w http.ResponseWriter, r *http.Request) {
 
 	contact, err := handler.ContactUC.Add(&contactRequest)
 	if err != nil {
-		_ = helper.NewJsonResponse(w, http.StatusInternalServerError, err.Error(), nil)
+		code, message := helper.HandleAppError(err)
+		_ = helper.NewJsonResponse(w, code, message, nil)
 		return
 	}
 
@@ -102,11 +103,8 @@ func (handler *contactHTTPHandler) Detail(w http.ResponseWriter, r *http.Request
 
 	contact, err := handler.ContactUC.Detail(int64(id))
 	if err != nil {
-		if appErr, ok := err.(*helper.AppError); ok {
-			_ = helper.NewJsonResponse(w, http.StatusNotFound, appErr.Message, nil)
-		} else {
-			_ = helper.NewJsonResponse(w, http.StatusInternalServerError, err.Error(), nil)
-		}
+		code, message := helper.HandleAppError(err)
+		_ = helper.NewJsonResponse(w, code, message, nil)
 		return
 	}
 
@@ -139,7 +137,8 @@ func (handler *contactHTTPHandler) Update(w http.ResponseWriter, r *http.Request
 
 	contact, err := handler.ContactUC.Update(int64(id), &contactRequest)
 	if err != nil {
-		_ = helper.NewJsonResponse(w, http.StatusInternalServerError, err.Error(), nil)
+		code, message := helper.HandleAppError(err)
+		_ = helper.NewJsonResponse(w, code, message, nil)
 		return
 	}
 
@@ -165,7 +164,8 @@ func (handler *contactHTTPHandler) Delete(w http.ResponseWriter, r *http.Request
 
 	err = handler.ContactUC.Delete(int64(id))
 	if err != nil {
-		_ = helper.NewJsonResponse(w, http.StatusInternalServerError, err.Error(), nil)
+		code, message := helper.HandleAppError(err)
+		_ = helper.NewJsonResponse(w, code, message, nil)
 		return
 	}
 
