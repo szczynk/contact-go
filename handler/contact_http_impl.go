@@ -81,7 +81,7 @@ func (handler *contactHTTPHandler) Add(w http.ResponseWriter, r *http.Request) {
 	// w.WriteHeader(http.StatusOK)
 	// w.Write([]byte(msg))
 
-	err = helper.NewJsonResponse(w, http.StatusOK, "OK", contact)
+	err = helper.NewJsonResponse(w, http.StatusCreated, "Created", contact)
 	if err != nil {
 		_ = helper.NewJsonResponse(w, http.StatusInternalServerError, err.Error(), nil)
 		return
