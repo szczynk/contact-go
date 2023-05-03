@@ -27,3 +27,6 @@ vendor
 tmp
 coverage
 data/contact.json
+reports/result.out
+Makefile
+.scannerwork

@@ -1,3 +1,4 @@
+//go:generate mockery --output=../mocks --name ContactHTTPHandler
 package handler
 
 import "net/http"

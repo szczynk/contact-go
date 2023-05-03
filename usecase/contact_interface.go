@@ -1,3 +1,5 @@
+//go:generate mockery --output=../mocks --name ContactUsecase
+
 package usecase
 
 import "contact-go/model"

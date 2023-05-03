@@ -1,3 +1,4 @@
+//go:generate mockery --output=../mocks --name ContactRepository
 package repository
 
 import "contact-go/model"
