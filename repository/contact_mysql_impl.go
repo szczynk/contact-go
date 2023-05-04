@@ -74,44 +74,37 @@ func (repo *contactMysqlRepository) Add(contact *model.Contact) (*model.Contact,
 
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
-		_ = tx.Rollback()
 		return nil, err
 	}
 
 	stmt1, err := tx.PrepareContext(ctx, sqlQuery1)
 	if err != nil {
-		_ = tx.Rollback()
 		return nil, err
 	}
 
 	row1, err := stmt1.ExecContext(ctx, contact.Name, contact.NoTelp)
 	if err != nil {
-		_ = tx.Rollback()
 		return nil, err
 	}
 
 	id, err := row1.LastInsertId()
 	if err != nil {
-		_ = tx.Rollback()
 		return nil, err
 	}
 
 	stmt2, err := tx.PrepareContext(ctx, sqlQuery2)
 	if err != nil {
-		_ = tx.Rollback()
 		return nil, err
 	}
 
 	row2 := stmt2.QueryRowContext(ctx, id)
 	err = row2.Scan(&newContact.ID, &newContact.Name, &newContact.NoTelp)
 	if err != nil {
-		_ = tx.Rollback()
 		return nil, err
 	}
 
 	err = tx.Commit()
 	if err != nil {
-		_ = tx.Rollback()
 		return nil, err
 	}
 
@@ -155,44 +148,34 @@ func (repo *contactMysqlRepository) Update(id int64, contact *model.Contact) (*m
 
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
-		_ = tx.Rollback()
 		return nil, err
 	}
 
 	stmt1, err := tx.PrepareContext(ctx, sqlQuery1)
 	if err != nil {
-		_ = tx.Rollback()
 		return nil, err
 	}
+	defer stmt1.Close()
 
-	row1, err := stmt1.ExecContext(ctx, contact.Name, contact.NoTelp, id)
+	_, err = stmt1.ExecContext(ctx, contact.Name, contact.NoTelp, id)
 	if err != nil {
-		_ = tx.Rollback()
-		return nil, err
-	}
-
-	contactId, err := row1.LastInsertId()
-	if err != nil {
-		_ = tx.Rollback()
 		return nil, err
 	}
 
 	stmt2, err := tx.PrepareContext(ctx, sqlQuery2)
 	if err != nil {
-		_ = tx.Rollback()
 		return nil, err
 	}
+	defer stmt2.Close()
 
-	row2 := stmt2.QueryRowContext(ctx, contactId)
+	row2 := stmt2.QueryRowContext(ctx, id)
 	err = row2.Scan(&updatedContact.ID, &updatedContact.Name, &updatedContact.NoTelp)
 	if err != nil {
-		_ = tx.Rollback()
 		return nil, err
 	}
 
 	err = tx.Commit()
 	if err != nil {
-		_ = tx.Rollback()
 		return nil, err
 	}
 

@@ -4,6 +4,8 @@ import (
 	"contact-go/config"
 	"contact-go/config/db"
 	"contact-go/handler"
+	"contact-go/helper/logger"
+	"contact-go/middleware"
 	"contact-go/repository"
 	"contact-go/usecase"
 	"log"
@@ -16,14 +18,16 @@ func main() {
 		log.Fatal(err)
 	}
 
+	l := logger.New(true)
+
 	contactUC := createContactUsecase(config)
 
 	switch config.Mode {
 	case "http":
 		contactHTTPHandler := handler.NewContactHTTPHandler(contactUC)
-		err := NewServer(config, contactHTTPHandler)
+		err := NewServer(config.Port, l, contactHTTPHandler)
 		if err != nil {
-			log.Fatal(err)
+			l.Fatal().Err(err).Msg("server fail to start")
 		}
 	default:
 		contactCLIHandler := handler.NewContactHandler(contactUC)
@@ -53,8 +57,24 @@ func createContactUsecase(config *config.Config) usecase.ContactUsecase {
 	return usecase.NewContactUsecase(contactRepo)
 }
 
-func NewServer(config *config.Config, handler handler.ContactHTTPHandler) error {
+func NewServer(port string, logger *logger.Logger, handler handler.ContactHTTPHandler) error {
 	mux := http.NewServeMux()
+
+	muxMiddleware := new(middleware.Middleware)
+	muxMiddleware.Handler = mux
+
+	muxMiddleware.Use(middleware.Cors)
+	muxMiddleware.Use(middleware.ContentTypeJson)
+	muxMiddleware.Use(
+		func(w http.ResponseWriter, r *http.Request, next http.Handler) http.Handler {
+			return middleware.Log(logger, w, r, next)
+		},
+	)
+	muxMiddleware.Use(
+		func(w http.ResponseWriter, r *http.Request, next http.Handler) http.Handler {
+			return middleware.Error(logger, w, r, next)
+		},
+	)
 
 	mux.HandleFunc("/contacts", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("content-type", "application/json")
@@ -85,14 +105,15 @@ func NewServer(config *config.Config, handler handler.ContactHTTPHandler) error 
 	})
 
 	server := &http.Server{
-		Addr:    "localhost:" + config.Port,
-		Handler: mux,
+		Addr:    "localhost:" + port,
+		Handler: muxMiddleware,
 	}
 
 	err := server.ListenAndServe()
 	if err != nil {
 		return err
 	}
-	log.Printf("live on http://localhost:%s", config.Port)
+
+	logger.Info().Msgf("live on http://localhost:%s", port)
 	return nil
 }

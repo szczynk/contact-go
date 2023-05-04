@@ -3,11 +3,11 @@ package repository
 import (
 	"contact-go/model"
 	"database/sql"
+	"errors"
 	"regexp"
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -50,7 +50,7 @@ func (s *MysqlRepoSuite) Test_contactMysqlRepository_List() {
 	}{
 		// TODO: Add test cases.
 		{
-			name: "success",
+			name: "fail",
 			beforeTest: func(s sqlmock.Sqlmock) {
 				rows := sqlmock.NewRows([]string{"id", "name", "no_telp"}).
 					AddRow(1, "test", "555-555-3232")
@@ -71,7 +71,7 @@ func (s *MysqlRepoSuite) Test_contactMysqlRepository_List() {
 			name: "fail",
 			beforeTest: func(s sqlmock.Sqlmock) {
 				s.ExpectQuery("SELECT id, name, no_telp FROM contact ORDER BY id ASC").
-					WillReturnError(assert.AnError)
+					WillReturnError(sql.ErrNoRows)
 			},
 			want:    nil,
 			wantErr: true,
@@ -157,6 +157,34 @@ func (s *MysqlRepoSuite) Test_contactMysqlRepository_Add() {
 			},
 			wantErr: false,
 		},
+		{
+			name: "invalid Name or NoTelp",
+			args: args{
+				contact: &model.Contact{
+					Name:   "",
+					NoTelp: "555-555-3232",
+				},
+			},
+			beforeTest: func(s sqlmock.Sqlmock) {
+				sqlQuery1 := `
+				INSERT INTO contact(name, no_telp) 
+				VALUES (?, ?)
+				`
+
+				err := errors.New("invalid contact")
+
+				s.ExpectBegin()
+				s.ExpectPrepare(regexp.QuoteMeta(sqlQuery1)).
+					WillBeClosed().
+					ExpectExec().
+					WithArgs("", "555-555-3232").
+					WillReturnError(err)
+
+				s.ExpectRollback()
+			},
+			want:    nil,
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		s.Run(tt.name, func() {
@@ -207,6 +235,18 @@ func (s *MysqlRepoSuite) Test_contactMysqlRepository_Detail() {
 				NoTelp: "555-555-3232",
 			},
 			wantErr: false,
+		},
+		{
+			name: "fail",
+			args: args{
+				id: 0,
+			},
+			beforeTest: func(s sqlmock.Sqlmock) {
+				s.ExpectQuery(regexp.QuoteMeta("SELECT id, name, no_telp FROM contact WHERE id = ? LIMIT 1")).
+					WillReturnError(sql.ErrNoRows)
+			},
+			want:    nil,
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
@@ -291,6 +331,64 @@ func (s *MysqlRepoSuite) Test_contactMysqlRepository_Update() {
 			},
 			wantErr: false,
 		},
+		{
+			name: "invalid ID",
+			args: args{
+				id: 0,
+				contact: &model.Contact{
+					Name:   "test",
+					NoTelp: "555-555-3232",
+				},
+			},
+			beforeTest: func(s sqlmock.Sqlmock) {
+				sqlQuery1 := `
+				UPDATE contact SET name = ?, no_telp = ? 
+				WHERE id = ?
+				`
+
+				result := sqlmock.NewResult(0, 0)
+
+				s.ExpectBegin()
+				s.ExpectPrepare(regexp.QuoteMeta(sqlQuery1)).
+					WillBeClosed().
+					ExpectExec().
+					WithArgs("test", "555-555-3232", int64(0)).
+					WillReturnResult(result)
+
+				s.ExpectRollback()
+			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "invalid Name or NoTelp",
+			args: args{
+				id: 1,
+				contact: &model.Contact{
+					Name:   "",
+					NoTelp: "555-555-4000",
+				},
+			},
+			beforeTest: func(s sqlmock.Sqlmock) {
+				sqlQuery1 := `
+				UPDATE contact SET name = ?, no_telp = ? 
+				WHERE id = ?
+				`
+
+				err := errors.New("invalid contact")
+
+				s.ExpectBegin()
+				s.ExpectPrepare(regexp.QuoteMeta(sqlQuery1)).
+					WillBeClosed().
+					ExpectExec().
+					WithArgs("", "555-555-4000", int64(1)).
+					WillReturnError(err)
+
+				s.ExpectRollback()
+			},
+			want:    nil,
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		s.Run(tt.name, func() {
@@ -334,6 +432,18 @@ func (s *MysqlRepoSuite) Test_contactMysqlRepository_Delete() {
 					WillReturnResult(result)
 			},
 			wantErr: false,
+		},
+		{
+			name: "fail",
+			args: args{
+				id: 0,
+			},
+			beforeTest: func(s sqlmock.Sqlmock) {
+				s.ExpectExec(regexp.QuoteMeta("DELETE FROM contact WHERE id = ?")).
+					WithArgs(int64(0)).
+					WillReturnError(sql.ErrNoRows)
+			},
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {

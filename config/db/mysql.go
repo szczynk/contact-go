@@ -2,7 +2,7 @@ package db
 
 import (
 	"contact-go/config"
-	"contact-go/helper"
+	"contact-go/helper/apperrors"
 	"context"
 	"database/sql"
 	"time"
@@ -12,7 +12,7 @@ import (
 
 func NewMysqlDatabase(cfg *config.Config) (*sql.DB, error) {
 	if cfg.Database.URL == "" {
-		return nil, helper.NewAppError(helper.ErrDbUrlNotExist)
+		return nil, apperrors.NewAppError(apperrors.ErrDbUrlNotExist)
 	}
 
 	db, err := sql.Open(cfg.Database.Driver, cfg.Database.URL)

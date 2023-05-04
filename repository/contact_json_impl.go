@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"contact-go/helper"
+	"contact-go/helper/apperrors"
 	"contact-go/model"
 	"encoding/json"
 	"os"
@@ -78,7 +78,7 @@ func (repo *contactJsonRepository) getIndexByID(id int64) (int, error) {
 		}
 	}
 
-	return -1, helper.NewAppError(helper.ErrContactNotFound)
+	return -1, apperrors.NewAppError(apperrors.ErrContactNotFound)
 }
 
 func (repo *contactJsonRepository) Add(contact *model.Contact) (*model.Contact, error) {

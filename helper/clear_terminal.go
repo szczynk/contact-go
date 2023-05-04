@@ -1,6 +1,7 @@
 package helper
 
 import (
+	"contact-go/helper/apperrors"
 	"os"
 	"os/exec"
 	"runtime"
@@ -14,7 +15,7 @@ func ClearTerminal() error {
 	case "windows":
 		cmd = exec.Command("cmd", "/c", "cls") //Windows example, its tested
 	default:
-		return NewAppError(ErrPlatformNotSupported)
+		return apperrors.NewAppError(apperrors.ErrPlatformNotSupported)
 	}
 	cmd.Stdout = os.Stdout
 	return cmd.Run()

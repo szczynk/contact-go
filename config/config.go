@@ -1,7 +1,7 @@
 package config
 
 import (
-	"contact-go/helper"
+	"contact-go/helper/apperrors"
 
 	"github.com/spf13/viper"
 )
@@ -24,7 +24,7 @@ func LoadConfig() (*Config, error) {
 	if err != nil {
 		_, ok := err.(viper.ConfigFileNotFoundError)
 		if ok {
-			return nil, helper.NewAppError(helper.ErrEnvNotFound)
+			return nil, apperrors.NewAppError(apperrors.ErrEnvNotFound)
 		}
 		return nil, err
 	}
