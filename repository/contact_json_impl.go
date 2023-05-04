@@ -7,12 +7,14 @@ import (
 	"os"
 )
 
-const jsonFile = "data/contact.json"
+type contactJsonRepository struct {
+	jsonFile string
+}
 
-type contactJsonRepository struct{}
-
-func NewContactJsonRepository() ContactRepository {
-	return new(contactJsonRepository)
+func NewContactJsonRepository(jsonFilePath string) ContactRepository {
+	repo := new(contactJsonRepository)
+	repo.jsonFile = jsonFilePath
+	return repo
 }
 
 func (repo *contactJsonRepository) encodeJSON(path string, contacts *[]model.Contact) error {
@@ -46,7 +48,7 @@ func (repo *contactJsonRepository) decodeJSON(path string, contacts *[]model.Con
 }
 
 func (repo *contactJsonRepository) List() ([]model.Contact, error) {
-	err := repo.decodeJSON(jsonFile, &model.Contacts)
+	err := repo.decodeJSON(repo.jsonFile, &model.Contacts)
 	if err != nil {
 		return []model.Contact{}, err
 	}
@@ -92,7 +94,7 @@ func (repo *contactJsonRepository) Add(contact *model.Contact) (*model.Contact, 
 
 	model.Contacts = append(model.Contacts, *newContact)
 
-	err = repo.encodeJSON(jsonFile, &model.Contacts)
+	err = repo.encodeJSON(repo.jsonFile, &model.Contacts)
 	if err != nil {
 		return nil, err
 	}
@@ -131,7 +133,7 @@ func (repo *contactJsonRepository) Update(id int64, contact *model.Contact) (*mo
 	updatedContact.Name = contact.Name
 	updatedContact.NoTelp = contact.NoTelp
 
-	err = repo.encodeJSON(jsonFile, &model.Contacts)
+	err = repo.encodeJSON(repo.jsonFile, &model.Contacts)
 	if err != nil {
 		return nil, err
 	}
@@ -147,7 +149,7 @@ func (repo *contactJsonRepository) Delete(id int64) error {
 
 	model.Contacts = append(model.Contacts[:index], model.Contacts[index+1:]...)
 
-	err = repo.encodeJSON(jsonFile, &model.Contacts)
+	err = repo.encodeJSON(repo.jsonFile, &model.Contacts)
 	if err != nil {
 		return err
 	}

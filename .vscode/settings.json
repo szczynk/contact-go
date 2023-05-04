@@ -1,0 +1,6 @@
+{
+  "sonarlint.connectedMode.project": {
+    "connectionId": "http-localhost-9555",
+    "projectKey": "contact-go"
+  }
+}

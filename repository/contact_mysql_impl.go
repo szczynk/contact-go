@@ -31,7 +31,13 @@ func (repo *contactMysqlRepository) List() ([]model.Contact, error) {
 	defer cancel()
 
 	sqlQuery := "SELECT id, name, no_telp FROM contact ORDER BY id ASC"
-	rows, err := repo.db.QueryContext(ctx, sqlQuery)
+	stmt, err := repo.db.PrepareContext(ctx, sqlQuery)
+	if err != nil {
+		return contacts, err
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.QueryContext(ctx)
 	if err != nil {
 		return contacts, err
 	}
@@ -119,7 +125,13 @@ func (repo *contactMysqlRepository) Detail(id int64) (*model.Contact, error) {
 	defer cancel()
 
 	sqlQuery := "SELECT id, name, no_telp FROM contact WHERE id = ? LIMIT 1"
-	row := repo.db.QueryRowContext(ctx, sqlQuery, id)
+	stmt, err := repo.db.PrepareContext(ctx, sqlQuery)
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
+
+	row := stmt.QueryRowContext(ctx, id)
 	err = row.Scan(&contact.ID, &contact.Name, &contact.NoTelp)
 	if err != nil {
 		return nil, err
@@ -187,7 +199,13 @@ func (repo *contactMysqlRepository) Delete(id int64) error {
 	defer cancel()
 
 	sqlQuery := "DELETE FROM contact WHERE id = ?"
-	_, err := repo.db.ExecContext(ctx, sqlQuery, id)
+	stmt, err := repo.db.PrepareContext(ctx, sqlQuery)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.ExecContext(ctx, id)
 	if err != nil {
 		return err
 	}

@@ -6,8 +6,10 @@ import (
 	"errors"
 	"regexp"
 	"testing"
+	"time"
 
 	"github.com/DATA-DOG/go-sqlmock"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -25,6 +27,11 @@ func (s *MysqlRepoSuite) SetupTest() {
 	if err != nil {
 		s.Require().NoError(err)
 	}
+
+	db.SetMaxIdleConns(10)
+	db.SetMaxOpenConns(100)
+	db.SetConnMaxIdleTime(5 * time.Minute)
+	db.SetConnMaxLifetime(60 * time.Minute)
 
 	repo := NewContactMysqlRepository(db)
 
@@ -50,28 +57,26 @@ func (s *MysqlRepoSuite) Test_contactMysqlRepository_List() {
 	}{
 		// TODO: Add test cases.
 		{
-			name: "fail",
+			name: "success",
 			beforeTest: func(s sqlmock.Sqlmock) {
 				rows := sqlmock.NewRows([]string{"id", "name", "no_telp"}).
-					AddRow(1, "test", "555-555-3232")
+					AddRow(int64(1), "test", "555-555-3232")
 
-				s.ExpectQuery("SELECT id, name, no_telp FROM contact ORDER BY id ASC").
+				s.ExpectPrepare("SELECT id, name, no_telp FROM contact ORDER BY id ASC").
+					ExpectQuery().
 					WillReturnRows(rows)
 			},
 			want: []model.Contact{
-				{
-					ID:     1,
-					Name:   "test",
-					NoTelp: "555-555-3232",
-				},
+				{ID: 1, Name: "test", NoTelp: "555-555-3232"},
 			},
 			wantErr: false,
 		},
 		{
 			name: "fail",
 			beforeTest: func(s sqlmock.Sqlmock) {
-				s.ExpectQuery("SELECT id, name, no_telp FROM contact ORDER BY id ASC").
-					WillReturnError(sql.ErrNoRows)
+				s.ExpectPrepare("SELECT id, name, no_telp FROM contact ORDER BY id ASC").
+					ExpectQuery().
+					WillReturnError(assert.AnError)
 			},
 			want:    nil,
 			wantErr: true,
@@ -128,22 +133,21 @@ func (s *MysqlRepoSuite) Test_contactMysqlRepository_Add() {
 				LIMIT 1
 				`
 
+				s.ExpectBegin()
+
 				result := sqlmock.NewResult(1, 1)
 
-				rows := sqlmock.NewRows([]string{"id", "name", "no_telp"}).
-					AddRow(1, "test", "555-555-3232")
-
-				s.ExpectBegin()
 				s.ExpectPrepare(regexp.QuoteMeta(sqlQuery1)).
-					WillBeClosed().
 					ExpectExec().
 					WithArgs("test", "555-555-3232").
 					WillReturnResult(result)
 
 				id, _ := result.LastInsertId()
 
+				rows := sqlmock.NewRows([]string{"id", "name", "no_telp"}).
+					AddRow(int64(1), "test", "555-555-3232")
+
 				s.ExpectPrepare(regexp.QuoteMeta(sqlQuery2)).
-					WillBeClosed().
 					ExpectQuery().
 					WithArgs(id).
 					WillReturnRows(rows)
@@ -171,11 +175,11 @@ func (s *MysqlRepoSuite) Test_contactMysqlRepository_Add() {
 				VALUES (?, ?)
 				`
 
+				s.ExpectBegin()
+
 				err := errors.New("invalid contact")
 
-				s.ExpectBegin()
 				s.ExpectPrepare(regexp.QuoteMeta(sqlQuery1)).
-					WillBeClosed().
 					ExpectExec().
 					WithArgs("", "555-555-3232").
 					WillReturnError(err)
@@ -224,9 +228,11 @@ func (s *MysqlRepoSuite) Test_contactMysqlRepository_Detail() {
 			},
 			beforeTest: func(s sqlmock.Sqlmock) {
 				rows := sqlmock.NewRows([]string{"id", "name", "no_telp"}).
-					AddRow(1, "test", "555-555-3232")
+					AddRow(int64(1), "test", "555-555-3232")
 
-				s.ExpectQuery(regexp.QuoteMeta("SELECT id, name, no_telp FROM contact WHERE id = ? LIMIT 1")).
+				s.ExpectPrepare(regexp.QuoteMeta("SELECT id, name, no_telp FROM contact WHERE id = ? LIMIT 1")).
+					ExpectQuery().
+					WithArgs(int64(1)).
 					WillReturnRows(rows)
 			},
 			want: &model.Contact{
@@ -242,7 +248,9 @@ func (s *MysqlRepoSuite) Test_contactMysqlRepository_Detail() {
 				id: 0,
 			},
 			beforeTest: func(s sqlmock.Sqlmock) {
-				s.ExpectQuery(regexp.QuoteMeta("SELECT id, name, no_telp FROM contact WHERE id = ? LIMIT 1")).
+				s.ExpectPrepare(regexp.QuoteMeta("SELECT id, name, no_telp FROM contact WHERE id = ? LIMIT 1")).
+					ExpectQuery().
+					WithArgs(int64(0)).
 					WillReturnError(sql.ErrNoRows)
 			},
 			want:    nil,
@@ -302,22 +310,21 @@ func (s *MysqlRepoSuite) Test_contactMysqlRepository_Update() {
 				LIMIT 1
 				`
 
+				s.ExpectBegin()
+
 				result := sqlmock.NewResult(1, 1)
 
-				rows := sqlmock.NewRows([]string{"id", "name", "no_telp"}).
-					AddRow(1, "jangkrik", "555-555-4000")
-
-				s.ExpectBegin()
 				s.ExpectPrepare(regexp.QuoteMeta(sqlQuery1)).
-					WillBeClosed().
 					ExpectExec().
-					WithArgs("jangkrik", "555-555-4000", 1).
+					WithArgs("jangkrik", "555-555-4000", int64(1)).
 					WillReturnResult(result)
 
 				id, _ := result.LastInsertId()
 
+				rows := sqlmock.NewRows([]string{"id", "name", "no_telp"}).
+					AddRow(int64(1), "jangkrik", "555-555-4000")
+
 				s.ExpectPrepare(regexp.QuoteMeta(sqlQuery2)).
-					WillBeClosed().
 					ExpectQuery().
 					WithArgs(id).
 					WillReturnRows(rows)
@@ -346,11 +353,11 @@ func (s *MysqlRepoSuite) Test_contactMysqlRepository_Update() {
 				WHERE id = ?
 				`
 
+				s.ExpectBegin()
+
 				result := sqlmock.NewResult(0, 0)
 
-				s.ExpectBegin()
 				s.ExpectPrepare(regexp.QuoteMeta(sqlQuery1)).
-					WillBeClosed().
 					ExpectExec().
 					WithArgs("test", "555-555-3232", int64(0)).
 					WillReturnResult(result)
@@ -375,11 +382,11 @@ func (s *MysqlRepoSuite) Test_contactMysqlRepository_Update() {
 				WHERE id = ?
 				`
 
+				s.ExpectBegin()
+
 				err := errors.New("invalid contact")
 
-				s.ExpectBegin()
 				s.ExpectPrepare(regexp.QuoteMeta(sqlQuery1)).
-					WillBeClosed().
 					ExpectExec().
 					WithArgs("", "555-555-4000", int64(1)).
 					WillReturnError(err)
@@ -428,7 +435,9 @@ func (s *MysqlRepoSuite) Test_contactMysqlRepository_Delete() {
 			beforeTest: func(s sqlmock.Sqlmock) {
 				result := sqlmock.NewResult(1, 1)
 
-				s.ExpectExec(regexp.QuoteMeta("DELETE FROM contact WHERE id = ?")).
+				s.ExpectPrepare(regexp.QuoteMeta("DELETE FROM contact WHERE id = ?")).
+					ExpectExec().
+					WithArgs(int64(1)).
 					WillReturnResult(result)
 			},
 			wantErr: false,
@@ -439,7 +448,8 @@ func (s *MysqlRepoSuite) Test_contactMysqlRepository_Delete() {
 				id: 0,
 			},
 			beforeTest: func(s sqlmock.Sqlmock) {
-				s.ExpectExec(regexp.QuoteMeta("DELETE FROM contact WHERE id = ?")).
+				s.ExpectPrepare(regexp.QuoteMeta("DELETE FROM contact WHERE id = ?")).
+					ExpectExec().
 					WithArgs(int64(0)).
 					WillReturnError(sql.ErrNoRows)
 			},

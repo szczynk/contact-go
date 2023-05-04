@@ -63,14 +63,10 @@ func (handler *contactHTTPHandler) Add(w http.ResponseWriter, r *http.Request) {
 
 func (handler *contactHTTPHandler) Detail(w http.ResponseWriter, r *http.Request) {
 	idStr := strings.TrimPrefix(r.URL.Path, "/contacts/")
-	if idStr == "" {
-		_ = response.NewJsonResponse(w, http.StatusBadRequest, apperrors.ErrContactIdNotValid, nil)
-		return
-	}
 
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		_ = response.NewJsonResponse(w, http.StatusBadRequest, err.Error(), nil)
+		_ = response.NewJsonResponse(w, http.StatusBadRequest, apperrors.ErrContactIdNotValid, nil)
 		return
 	}
 
@@ -93,14 +89,10 @@ func (handler *contactHTTPHandler) Detail(w http.ResponseWriter, r *http.Request
 
 func (handler *contactHTTPHandler) Update(w http.ResponseWriter, r *http.Request) {
 	idStr := strings.TrimPrefix(r.URL.Path, "/contacts/")
-	if idStr == "" {
-		_ = response.NewJsonResponse(w, http.StatusBadRequest, apperrors.ErrContactIdNotValid, nil)
-		return
-	}
 
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		_ = response.NewJsonResponse(w, http.StatusBadRequest, err.Error(), nil)
+		_ = response.NewJsonResponse(w, http.StatusBadRequest, apperrors.ErrContactIdNotValid, nil)
 		return
 	}
 
@@ -140,14 +132,10 @@ func (handler *contactHTTPHandler) Update(w http.ResponseWriter, r *http.Request
 
 func (handler *contactHTTPHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	idStr := strings.TrimPrefix(r.URL.Path, "/contacts/")
-	if idStr == "" {
-		_ = response.NewJsonResponse(w, http.StatusBadRequest, apperrors.ErrContactIdNotValid, nil)
-		return
-	}
 
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		_ = response.NewJsonResponse(w, http.StatusBadRequest, err.Error(), nil)
+		_ = response.NewJsonResponse(w, http.StatusBadRequest, apperrors.ErrContactIdNotValid, nil)
 		return
 	}
 
