@@ -87,7 +87,7 @@ func (handler *contactHandler) Detail() {
 	fmt.Print("Contact ID = ")
 	var contactID int64
 	fmt.Scanln(&contactID)
-	if contactID == 0 {
+	if contactID <= 0 {
 		fmt.Println("Contact ID yang dimasukkan tidak valid")
 		return
 	}
@@ -112,7 +112,7 @@ func (handler *contactHandler) Update() {
 	fmt.Print("ID = ")
 	var id int64
 	fmt.Scanln(&id)
-	if id == 0 {
+	if id <= 0 {
 		fmt.Println("ID yang dimasukkan tidak valid")
 		return
 	}
@@ -157,7 +157,7 @@ func (handler *contactHandler) Delete() {
 	fmt.Print("ID = ")
 	var id int64
 	fmt.Scanln(&id)
-	if id == 0 {
+	if id <= 0 {
 		fmt.Println("ID yang dimasukkan tidak valid")
 		return
 	}

@@ -74,6 +74,11 @@ func (handler *contactHTTPHandler) Detail(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	if id <= 0 {
+		_ = response.NewJsonResponse(w, http.StatusBadRequest, apperrors.ErrContactIdNotValid, nil)
+		return
+	}
+
 	contact, err := handler.ContactUC.Detail(int64(id))
 	if err != nil {
 		code, message := apperrors.HandleAppError(err)
@@ -99,10 +104,25 @@ func (handler *contactHTTPHandler) Update(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	if id <= 0 {
+		_ = response.NewJsonResponse(w, http.StatusBadRequest, apperrors.ErrContactIdNotValid, nil)
+		return
+	}
+
 	var contactRequest model.ContactRequest
 	err = json.NewDecoder(r.Body).Decode(&contactRequest)
 	if err != nil {
 		_ = response.NewJsonResponse(w, http.StatusBadRequest, err.Error(), nil)
+		return
+	}
+
+	if contactRequest.Name == "" {
+		_ = response.NewJsonResponse(w, http.StatusBadRequest, apperrors.ErrContactNameNotValid, nil)
+		return
+	}
+
+	if contactRequest.NoTelp == "" {
+		_ = response.NewJsonResponse(w, http.StatusBadRequest, apperrors.ErrContactNoTelpNotValid, nil)
 		return
 	}
 
@@ -128,6 +148,11 @@ func (handler *contactHTTPHandler) Delete(w http.ResponseWriter, r *http.Request
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		_ = response.NewJsonResponse(w, http.StatusBadRequest, err.Error(), nil)
+		return
+	}
+
+	if id <= 0 {
+		_ = response.NewJsonResponse(w, http.StatusBadRequest, apperrors.ErrContactIdNotValid, nil)
 		return
 	}
 

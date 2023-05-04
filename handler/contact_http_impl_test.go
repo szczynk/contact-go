@@ -7,6 +7,7 @@ import (
 	"contact-go/mocks"
 	"contact-go/model"
 	"contact-go/usecase"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -119,19 +120,32 @@ func Test_contactHTTPHandler_Add(t *testing.T) {
 			wantStatus: http.StatusCreated,
 			wantErr:    false,
 		},
-		// {
-		// 	name: "invalid name",
-		// 	args: args{
-		// 		req: &model.ContactRequest{
-		// 			Name:   "",
-		// 			NoTelp: "222-222-3232",
-		// 		},
-		// 	},
-		// 	UCResult:   nil,
-		// 	UCErr:      assert.AnError,
-		// 	wantStatus: http.StatusBadRequest,
-		// 	wantErr:    true,
-		// },
+		{
+			name: "invalid name",
+			args: args{
+				req: &model.ContactRequest{
+					Name:   "",
+					NoTelp: "222-222-3232",
+				},
+			},
+			UCResult:   nil,
+			UCErr:      assert.AnError,
+			wantStatus: http.StatusBadRequest,
+			wantErr:    true,
+		},
+		{
+			name: "invalid no_telp",
+			args: args{
+				req: &model.ContactRequest{
+					Name:   "test",
+					NoTelp: "",
+				},
+			},
+			UCResult:   nil,
+			UCErr:      assert.AnError,
+			wantStatus: http.StatusBadRequest,
+			wantErr:    true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -140,7 +154,10 @@ func Test_contactHTTPHandler_Add(t *testing.T) {
 			mockContactRequest.NoTelp = tt.args.req.NoTelp
 
 			mockContactUC := mocks.NewContactUsecase(t)
-			mockContactUC.On("Add", mockContactRequest).Return(tt.UCResult, tt.UCErr)
+
+			if !tt.wantErr {
+				mockContactUC.On("Add", mockContactRequest).Return(tt.UCResult, tt.UCErr)
+			}
 
 			h := NewContactHTTPHandler(mockContactUC)
 
@@ -196,11 +213,24 @@ func Test_contactHTTPHandler_Detail(t *testing.T) {
 			wantStatus: http.StatusOK,
 			wantErr:    false,
 		},
+		{
+			name: "invalid ID",
+			args: args{
+				id: 0,
+			},
+			UCResult:   nil,
+			UCErr:      sql.ErrNoRows,
+			wantStatus: http.StatusBadRequest,
+			wantErr:    true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockContactUC := mocks.NewContactUsecase(t)
-			mockContactUC.On("Detail", tt.args.id).Return(tt.UCResult, tt.UCErr)
+
+			if !tt.wantErr {
+				mockContactUC.On("Detail", tt.args.id).Return(tt.UCResult, tt.UCErr)
+			}
 
 			h := NewContactHTTPHandler(mockContactUC)
 
@@ -260,6 +290,48 @@ func Test_contactHTTPHandler_Update(t *testing.T) {
 			wantStatus: http.StatusOK,
 			wantErr:    false,
 		},
+		{
+			name: "invalid ID",
+			args: args{
+				id: 0,
+				req: &model.ContactRequest{
+					Name:   "test1",
+					NoTelp: "222-222-3232",
+				},
+			},
+			UCResult:   nil,
+			UCErr:      sql.ErrNoRows,
+			wantStatus: http.StatusBadRequest,
+			wantErr:    true,
+		},
+		{
+			name: "invalid name",
+			args: args{
+				id: 1,
+				req: &model.ContactRequest{
+					Name:   "",
+					NoTelp: "222-222-3232",
+				},
+			},
+			UCResult:   nil,
+			UCErr:      assert.AnError,
+			wantStatus: http.StatusBadRequest,
+			wantErr:    true,
+		},
+		{
+			name: "invalid no_telp",
+			args: args{
+				id: 1,
+				req: &model.ContactRequest{
+					Name:   "test",
+					NoTelp: "",
+				},
+			},
+			UCResult:   nil,
+			UCErr:      assert.AnError,
+			wantStatus: http.StatusBadRequest,
+			wantErr:    true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -268,7 +340,10 @@ func Test_contactHTTPHandler_Update(t *testing.T) {
 			mockContactRequest.NoTelp = tt.args.req.NoTelp
 
 			mockContactUC := mocks.NewContactUsecase(t)
-			mockContactUC.On("Update", tt.args.id, mockContactRequest).Return(tt.UCResult, tt.UCErr)
+
+			if !tt.wantErr {
+				mockContactUC.On("Update", tt.args.id, mockContactRequest).Return(tt.UCResult, tt.UCErr)
+			}
 
 			h := NewContactHTTPHandler(mockContactUC)
 
@@ -321,11 +396,23 @@ func Test_contactHTTPHandler_Delete(t *testing.T) {
 			wantStatus: http.StatusOK,
 			wantErr:    false,
 		},
+		{
+			name: "invalid ID",
+			args: args{
+				id: 0,
+			},
+			UCErr:      sql.ErrNoRows,
+			wantStatus: http.StatusBadRequest,
+			wantErr:    true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockContactUC := mocks.NewContactUsecase(t)
-			mockContactUC.On("Delete", tt.args.id).Return(tt.UCErr)
+
+			if !tt.wantErr {
+				mockContactUC.On("Delete", tt.args.id).Return(tt.UCErr)
+			}
 
 			h := NewContactHTTPHandler(mockContactUC)
 
