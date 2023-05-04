@@ -418,7 +418,7 @@ func Test_contactHTTPHandler_Delete(t *testing.T) {
 
 			// Define your HTTP handler
 			handler := http.HandlerFunc(h.Delete)
-			method := "GET"
+			method := "DELETE"
 			url := fmt.Sprintf("http://localhost:8080/contacts/%v", tt.args.id)
 
 			m := useMiddleware(handler)
