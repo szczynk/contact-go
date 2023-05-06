@@ -15,8 +15,8 @@ func (repo *contactRepository) List() ([]model.Contact, error) {
 	return model.Contacts, nil
 }
 
-func (repo *contactRepository) getLastID() (int64, error) {
-	contacts, err := repo.List()
+func (repo *contactRepository) getLastID() int64 {
+	contacts, _ := repo.List()
 
 	var tempID int64
 	for _, v := range contacts {
@@ -24,14 +24,11 @@ func (repo *contactRepository) getLastID() (int64, error) {
 			tempID = v.ID
 		}
 	}
-	return tempID, err
+	return tempID
 }
 
 func (repo *contactRepository) getIndexByID(id int64) (int, error) {
-	contacts, err := repo.List()
-	if err != nil {
-		return -1, err
-	}
+	contacts, _ := repo.List()
 
 	for i, v := range contacts {
 		if id == v.ID {
@@ -43,10 +40,7 @@ func (repo *contactRepository) getIndexByID(id int64) (int, error) {
 }
 
 func (repo *contactRepository) Add(contact *model.Contact) (*model.Contact, error) {
-	id, err := repo.getLastID()
-	if err != nil {
-		return nil, err
-	}
+	id := repo.getLastID()
 
 	newContact := contact
 	newContact.ID = id + 1
@@ -57,10 +51,7 @@ func (repo *contactRepository) Add(contact *model.Contact) (*model.Contact, erro
 }
 
 func (repo *contactRepository) Detail(id int64) (*model.Contact, error) {
-	contacts, err := repo.List()
-	if err != nil {
-		return nil, err
-	}
+	contacts, _ := repo.List()
 
 	index, err := repo.getIndexByID(id)
 	if err != nil {
@@ -73,10 +64,7 @@ func (repo *contactRepository) Detail(id int64) (*model.Contact, error) {
 }
 
 func (repo *contactRepository) Update(id int64, contact *model.Contact) (*model.Contact, error) {
-	contacts, err := repo.List()
-	if err != nil {
-		return nil, err
-	}
+	contacts, _ := repo.List()
 
 	index, err := repo.getIndexByID(id)
 	if err != nil {

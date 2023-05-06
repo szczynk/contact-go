@@ -2,26 +2,28 @@ package handler
 
 import (
 	"contact-go/helper"
+	"contact-go/helper/input"
 	"contact-go/model"
 	"contact-go/usecase"
 	"fmt"
+	"io"
 )
 
 type contactHandler struct {
 	ContactUC usecase.ContactUsecase
+	Input     *input.InputReader
 }
 
-func NewContactHandler(contactUC usecase.ContactUsecase) ContactHandler {
-	return &contactHandler{
-		ContactUC: contactUC,
-	}
+func NewContactHandler(contactUC usecase.ContactUsecase, input *input.InputReader) ContactHandler {
+	contactHandler := new(contactHandler)
+	contactHandler.ContactUC = contactUC
+	contactHandler.Input = input
+
+	return contactHandler
 }
 
 func (handler *contactHandler) List() {
-	err := helper.ClearTerminal()
-	if err != nil {
-		fmt.Println(err)
-	}
+	_ = helper.ClearTerminal()
 
 	contacts, err := handler.ContactUC.List()
 
@@ -40,25 +42,20 @@ func (handler *contactHandler) List() {
 }
 
 func (handler *contactHandler) Add() {
-	err := helper.ClearTerminal()
-	if err != nil {
-		fmt.Println(err)
-	}
+	_ = helper.ClearTerminal()
 
 	fmt.Println("Add new contact")
 
 	fmt.Print("Name = ")
-	var name string
-	fmt.Scanln(&name)
-	if name == "" {
+	name, err := handler.Input.Scan()
+	if err != nil || name == "" {
 		fmt.Println("Name yang dimasukkan tidak valid")
 		return
 	}
 
 	fmt.Print("NoTelp = ")
-	var noTelp string
-	fmt.Scanln(&noTelp)
-	if noTelp == "" {
+	noTelp, err := handler.Input.Scan()
+	if err != nil || noTelp == "" {
 		fmt.Println("NoTelp yang dimasukkan tidak valid")
 		return
 	}
@@ -77,58 +74,61 @@ func (handler *contactHandler) Add() {
 }
 
 func (handler *contactHandler) Detail() {
-	err := helper.ClearTerminal()
-	if err != nil {
-		fmt.Println(err)
-	}
+	_ = helper.ClearTerminal()
 
 	fmt.Println("Contact Detail")
 
 	fmt.Print("Contact ID = ")
-	var contactID int64
-	fmt.Scanln(&contactID)
-	if contactID <= 0 {
-		fmt.Println("Contact ID yang dimasukkan tidak valid")
+	idStr, err := handler.Input.Scan()
+	if err != nil {
+		fmt.Println("ID yang dimasukkan tidak valid")
 		return
 	}
 
-	contact, err := handler.ContactUC.Detail(contactID)
+	var id int64
+	_, err = fmt.Sscan(idStr, &id)
+	if err != nil && err != io.EOF || id <= 0 {
+		fmt.Println("ID yang dimasukkan tidak valid")
+		return
+	}
+
+	contact, err := handler.ContactUC.Detail(id)
 	if err != nil {
 		fmt.Println(err.Error())
 	} else {
 		fmt.Printf("ID : \t\t%d\nNama : \t\t%s\nNo.Telp : \t%s\n", contact.ID, contact.Name, contact.NoTelp)
-
 	}
 }
 
 func (handler *contactHandler) Update() {
-	err := helper.ClearTerminal()
-	if err != nil {
-		fmt.Println(err)
-	}
+	_ = helper.ClearTerminal()
 
 	fmt.Println("Update a contact")
 
 	fmt.Print("ID = ")
+	idStr, err := handler.Input.Scan()
+	if err != nil {
+		fmt.Println("ID yang dimasukkan tidak valid")
+		return
+	}
+
 	var id int64
-	fmt.Scanln(&id)
-	if id <= 0 {
+	_, err = fmt.Sscan(idStr, &id)
+	if err != nil && err != io.EOF || id <= 0 {
 		fmt.Println("ID yang dimasukkan tidak valid")
 		return
 	}
 
 	fmt.Print("Name = ")
-	var name string
-	fmt.Scanln(&name)
-	if name == "" {
+	name, err := handler.Input.Scan()
+	if err != nil || name == "" {
 		fmt.Println("Name yang dimasukkan tidak valid")
 		return
 	}
 
 	fmt.Print("NoTelp = ")
-	var noTelp string
-	fmt.Scanln(&noTelp)
-	if noTelp == "" {
+	noTelp, err := handler.Input.Scan()
+	if err != nil || noTelp == "" {
 		fmt.Println("NoTelp yang dimasukkan tidak valid")
 		return
 	}
@@ -147,17 +147,20 @@ func (handler *contactHandler) Update() {
 }
 
 func (handler *contactHandler) Delete() {
-	err := helper.ClearTerminal()
-	if err != nil {
-		fmt.Println(err)
-	}
+	_ = helper.ClearTerminal()
 
 	fmt.Println("Delete a contact")
 
 	fmt.Print("ID = ")
+	idStr, err := handler.Input.Scan()
+	if err != nil {
+		fmt.Println("ID yang dimasukkan tidak valid")
+		return
+	}
+
 	var id int64
-	fmt.Scanln(&id)
-	if id <= 0 {
+	_, err = fmt.Sscan(idStr, &id)
+	if err != nil && err != io.EOF || id <= 0 {
 		fmt.Println("ID yang dimasukkan tidak valid")
 		return
 	}

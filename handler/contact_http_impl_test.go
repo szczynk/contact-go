@@ -71,7 +71,10 @@ func Test_contactHTTPHandler_List(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockContactUC := mocks.NewContactUsecase(t)
-			mockContactUC.On("List").Return(tt.UCResult, tt.UCErr)
+
+			if !tt.wantErr && tt.wantStatus == 200 || tt.wantStatus == 500 {
+				mockContactUC.On("List").Return(tt.UCResult, tt.UCErr)
+			}
 
 			h := NewContactHTTPHandler(mockContactUC)
 
@@ -169,10 +172,6 @@ func Test_contactHTTPHandler_Add(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockContactRequest := new(model.ContactRequest)
-			mockContactRequest.Name = tt.args.req.Name
-			mockContactRequest.NoTelp = tt.args.req.NoTelp
-
 			// mockContactJson := `
 			// {
 			// 	"name":"bagus
@@ -197,6 +196,10 @@ func Test_contactHTTPHandler_Add(t *testing.T) {
 			url := "http://localhost:8080/contacts"
 
 			m := useMiddleware(handler)
+
+			mockContactRequest := new(model.ContactRequest)
+			mockContactRequest.Name = tt.args.req.Name
+			mockContactRequest.NoTelp = tt.args.req.NoTelp
 
 			reqBody, _ := json.Marshal(mockContactRequest)
 			req := httptest.NewRequest(method, url, bytes.NewReader(reqBody))
@@ -246,7 +249,7 @@ func Test_contactHTTPHandler_Detail(t *testing.T) {
 			wantErr:    false,
 		},
 		{
-			name: "invalid ID",
+			name: "invalid id",
 			args: args{
 				id:    0,
 				idStr: "0",
@@ -345,7 +348,7 @@ func Test_contactHTTPHandler_Update(t *testing.T) {
 			wantErr:    false,
 		},
 		{
-			name: "invalid ID",
+			name: "invalid id",
 			args: args{
 				idStr: "0",
 				id:    0,
@@ -481,7 +484,7 @@ func Test_contactHTTPHandler_Delete(t *testing.T) {
 			wantErr:    false,
 		},
 		{
-			name: "invalid ID",
+			name: "invalid id",
 			args: args{
 				idStr: "0",
 				id:    0,

@@ -61,58 +61,30 @@ func (repo *contactMysqlRepository) List() ([]model.Contact, error) {
 }
 
 func (repo *contactMysqlRepository) Add(contact *model.Contact) (*model.Contact, error) {
-	newContact := new(model.Contact)
-	var err error
-
 	ctx, cancel := db.NewMysqlContext()
 	defer cancel()
 
-	sqlQuery1 := `
-	INSERT INTO contact(name, no_telp) 
-	VALUES (?, ?)
-	`
+	sqlQuery1 := "INSERT INTO contact(name, no_telp) VALUES (?, ?)"
+	stmt, err := repo.db.PrepareContext(ctx, sqlQuery1)
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
 
-	sqlQuery2 := `
-	SELECT id, name, no_telp
-	FROM contact WHERE id = ? 
-	LIMIT 1
-	`
-
-	tx, err := repo.db.BeginTx(ctx, nil)
+	row, err := stmt.ExecContext(ctx, contact.Name, contact.NoTelp)
 	if err != nil {
 		return nil, err
 	}
 
-	stmt1, err := tx.PrepareContext(ctx, sqlQuery1)
+	id, err := row.LastInsertId()
 	if err != nil {
 		return nil, err
 	}
 
-	row1, err := stmt1.ExecContext(ctx, contact.Name, contact.NoTelp)
-	if err != nil {
-		return nil, err
-	}
-
-	id, err := row1.LastInsertId()
-	if err != nil {
-		return nil, err
-	}
-
-	stmt2, err := tx.PrepareContext(ctx, sqlQuery2)
-	if err != nil {
-		return nil, err
-	}
-
-	row2 := stmt2.QueryRowContext(ctx, id)
-	err = row2.Scan(&newContact.ID, &newContact.Name, &newContact.NoTelp)
-	if err != nil {
-		return nil, err
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		return nil, err
-	}
+	newContact := new(model.Contact)
+	newContact.ID = id
+	newContact.Name = contact.Name
+	newContact.NoTelp = contact.NoTelp
 
 	return newContact, nil
 }
@@ -141,55 +113,25 @@ func (repo *contactMysqlRepository) Detail(id int64) (*model.Contact, error) {
 }
 
 func (repo *contactMysqlRepository) Update(id int64, contact *model.Contact) (*model.Contact, error) {
-	updatedContact := new(model.Contact)
-	var err error
-
 	ctx, cancel := db.NewMysqlContext()
 	defer cancel()
 
-	sqlQuery1 := `
-	UPDATE contact SET name = ?, no_telp = ? 
-	WHERE id = ?
-	`
+	sqlQuery := "UPDATE contact SET name = ?, no_telp = ? WHERE id = ?"
+	stmt, err := repo.db.PrepareContext(ctx, sqlQuery)
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
 
-	sqlQuery2 := `
-	SELECT id, name, no_telp
-	FROM contact WHERE id = ? 
-	LIMIT 1
-	`
-
-	tx, err := repo.db.BeginTx(ctx, nil)
+	_, err = stmt.ExecContext(ctx, contact.Name, contact.NoTelp, id)
 	if err != nil {
 		return nil, err
 	}
 
-	stmt1, err := tx.PrepareContext(ctx, sqlQuery1)
-	if err != nil {
-		return nil, err
-	}
-	defer stmt1.Close()
-
-	_, err = stmt1.ExecContext(ctx, contact.Name, contact.NoTelp, id)
-	if err != nil {
-		return nil, err
-	}
-
-	stmt2, err := tx.PrepareContext(ctx, sqlQuery2)
-	if err != nil {
-		return nil, err
-	}
-	defer stmt2.Close()
-
-	row2 := stmt2.QueryRowContext(ctx, id)
-	err = row2.Scan(&updatedContact.ID, &updatedContact.Name, &updatedContact.NoTelp)
-	if err != nil {
-		return nil, err
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		return nil, err
-	}
+	updatedContact := new(model.Contact)
+	updatedContact.ID = id
+	updatedContact.Name = contact.Name
+	updatedContact.NoTelp = contact.NoTelp
 
 	return updatedContact, nil
 }

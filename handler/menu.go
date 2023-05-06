@@ -2,35 +2,39 @@ package handler
 
 import (
 	"contact-go/helper"
+	"contact-go/helper/input"
 	"fmt"
+	"io"
 )
 
-func Menu(handler ContactHandler) {
+func Menu(handler ContactHandler, input *input.InputReader) {
 	err := helper.ClearTerminal()
 	if err != nil {
 		fmt.Println(err)
+		return
 	}
 
 	helper.ShowMenuList()
 
 	for {
+		menuStr, _ := input.Scan()
 		var menu int
-		fmt.Scanln(&menu)
+		_, err = fmt.Sscan(menuStr, &menu)
+		if err != nil {
+			if err != io.EOF {
+				fmt.Println(err)
+				break
+			}
+		}
 
 		if menu == 6 {
-			err := helper.ClearTerminal()
-			if err != nil {
-				fmt.Println(err)
-			}
+			_ = helper.ClearTerminal()
 			break
 		}
 
 		switch menu {
 		default: // case 0 atau selain 0
-			err := helper.ClearTerminal()
-			if err != nil {
-				fmt.Println(err)
-			}
+			_ = helper.ClearTerminal()
 			helper.ShowMenuList()
 		case 1:
 			handler.List()

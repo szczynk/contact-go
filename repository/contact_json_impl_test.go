@@ -3,63 +3,89 @@ package repository
 import (
 	"contact-go/model"
 	"encoding/json"
+	"log"
 	"os"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
 )
 
-func createTempJSONFile(t *testing.T, contacts []model.Contact) string {
+type JsonRepoSuite struct {
+	suite.Suite
+	repo         ContactRepository
+	tempFileName string
+}
+
+func (s *JsonRepoSuite) SetupSuite() {
+	contacts := []model.Contact{
+		{ID: 1, Name: "Reva", NoTelp: "555-1234-989"},
+		{ID: 2, Name: "Tirta", NoTelp: "555-5678"},
+		{ID: 3, Name: "Bagas", NoTelp: "555-9012"},
+	}
+
 	tempFile, err := os.CreateTemp("", "test_contact_*.json")
-	assert.NoError(t, err)
+	s.Require().NoError(err)
 
 	encoder := json.NewEncoder(tempFile)
 	err = encoder.Encode(&contacts)
-	assert.NoError(t, err)
+	s.Require().NoError(err)
 
 	err = tempFile.Close()
-	assert.NoError(t, err)
+	s.Require().NoError(err)
 
-	return tempFile.Name()
+	tempFileName := tempFile.Name()
+
+	repo := new(contactJsonRepository)
+	repo.jsonFile = tempFileName
+
+	s.tempFileName = tempFileName
+	s.repo = repo
 }
 
-func Test_contactJsonRepository_List(t *testing.T) {
+func (s *JsonRepoSuite) TearDownSuite() {
+	model.Contacts = []model.Contact{}
+	os.Remove(s.tempFileName)
+}
+
+func TestJsonRepoSuite(t *testing.T) {
+	suite.Run(t, new(JsonRepoSuite))
+}
+
+func (s *JsonRepoSuite) Test_contactJsonRepository_List() {
 	tests := []struct {
 		name    string
 		want    []model.Contact
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		// TODO: Add suiteSetupSuite cases.
 		{
 			name: "success",
 			want: []model.Contact{
-				{ID: 1, Name: "Licht", NoTelp: "123456789"},
+				{ID: 1, Name: "Reva", NoTelp: "555-1234-989"},
+				{ID: 3, Name: "Bagas", NoTelp: "555-9012"},
+				{ID: 4, Name: "Test1", NoTelp: "131-555-1"},
 			},
 			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			contacts := []model.Contact{
-				{ID: 1, Name: "Licht", NoTelp: "123456789"},
-			}
+		s.Run(tt.name, func() {
 
-			tempFile := createTempJSONFile(t, contacts)
-			defer os.Remove(tempFile)
+			err := s.repo.(*contactJsonRepository).decodeJSON(s.tempFileName, &model.Contacts)
+			log.Printf("\ndecodeJSON err: %v\n", err)
+			s.Require().NoError(err)
 
-			repo := NewContactJsonRepository(tempFile)
-			repo.(*contactJsonRepository).decodeJSON(tempFile, &model.Contacts)
+			got, err := s.repo.List()
+			log.Printf("\nrepo.List err: %v\n", err)
 
-			got, err := repo.List()
-
-			if assert.Equal(t, tt.wantErr, err != nil, "contactJsonRepository.List() error = %v, wantErr %v", err, tt.wantErr) {
-				assert.Equal(t, tt.want, got, "contactJsonRepository.List() = %v, want %v", got, tt.want)
+			if s.Equal(tt.wantErr, err != nil, "contactJsonRepository.List() error = %v, wantErr %v", err, tt.wantErr) {
+				s.Equal(tt.want, got, "contactJsonRepository.List() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func Test_contactJsonRepository_Add(t *testing.T) {
+func (s *JsonRepoSuite) Test_contactJsonRepository_Add() {
 	type args struct {
 		newContact *model.Contact
 	}
@@ -79,7 +105,7 @@ func Test_contactJsonRepository_Add(t *testing.T) {
 				},
 			},
 			want: &model.Contact{
-				ID:     2,
+				ID:     4,
 				Name:   "Test1",
 				NoTelp: "131-555-1",
 			},
@@ -87,27 +113,30 @@ func Test_contactJsonRepository_Add(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			contacts := []model.Contact{
-				{ID: 1, Name: "Licht", NoTelp: "123456789"},
-			}
+		s.Run(tt.name, func() {
+			// err := func(ttname) error {
+			// 	if ttname == "getLastID error" {
+			// 		return errors.New("getLastID mocked error")
+			// 	}
+			// 	_, err := s.repo.(*contactJsonRepository).getLastID()
+			// 	return err
+			// }()
 
-			tempFile := createTempJSONFile(t, contacts)
-			defer os.Remove(tempFile)
+			err := s.repo.(*contactJsonRepository).decodeJSON(s.tempFileName, &model.Contacts)
+			log.Printf("\ndecodeJSON err: %v\n", err)
+			s.Require().NoError(err)
 
-			repo := NewContactJsonRepository(tempFile)
-			repo.(*contactJsonRepository).decodeJSON(tempFile, &model.Contacts)
+			got, err := s.repo.Add(tt.args.newContact)
+			log.Printf("\nrepo.Add err: %v\n", err)
 
-			got, err := repo.Add(tt.args.newContact)
-
-			if assert.Equal(t, tt.wantErr, err != nil, "contactJsonRepository.Add() error = %v, wantErr %v", err, tt.wantErr) {
-				assert.Equal(t, tt.want, got, "contactJsonRepository.Add() = %v, want %v", got, tt.want)
+			if s.Equal(tt.wantErr, err != nil, "contactJsonRepository.Add() error = %v, wantErr %v", err, tt.wantErr) {
+				s.Equal(tt.want, got, "contactJsonRepository.Add() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func Test_contactJsonRepository_Detail(t *testing.T) {
+func (s *JsonRepoSuite) Test_contactJsonRepository_Detail() {
 	type args struct {
 		id int64
 	}
@@ -121,47 +150,37 @@ func Test_contactJsonRepository_Detail(t *testing.T) {
 		{
 			name: "success",
 			args: args{
-				id: 2,
+				id: 3,
 			},
 			want: &model.Contact{
-				ID:     2,
-				Name:   "Test1",
-				NoTelp: "131-555-1",
+				ID:     3,
+				Name:   "Bagas",
+				NoTelp: "555-9012",
 			},
 			wantErr: false,
 		},
 		{
 			name: "failed",
 			args: args{
-				id: 3,
+				id: 5,
 			},
 			want:    nil,
 			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			contacts := []model.Contact{
-				{ID: 1, Name: "Licht", NoTelp: "123456789"},
-				{ID: 2, Name: "Test1", NoTelp: "131-555-1"},
-			}
+		s.Run(tt.name, func() {
+			got, err := s.repo.Detail(tt.args.id)
+			log.Printf("\nrepo.Detail err: %v\n", err)
 
-			tempFile := createTempJSONFile(t, contacts)
-			defer os.Remove(tempFile)
-
-			repo := NewContactJsonRepository(tempFile)
-			repo.(*contactJsonRepository).decodeJSON(tempFile, &model.Contacts)
-
-			got, err := repo.Detail(tt.args.id)
-
-			if assert.Equal(t, tt.wantErr, err != nil, "contactJsonRepository.Detail() error = %v, wantErr %v", err, tt.wantErr) {
-				assert.Equal(t, tt.want, got, "contactJsonRepository.Detail() = %v, want %v", got, tt.want)
+			if s.Equal(tt.wantErr, err != nil, "contactJsonRepository.Detail() error = %v, wantErr %v", err, tt.wantErr) {
+				s.Equal(tt.want, got, "contactJsonRepository.Detail() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func Test_contactJsonRepository_Update(t *testing.T) {
+func (s *JsonRepoSuite) Test_contactJsonRepository_Update() {
 	type args struct {
 		id             int64
 		updatedContact *model.Contact
@@ -176,16 +195,16 @@ func Test_contactJsonRepository_Update(t *testing.T) {
 		{
 			name: "success",
 			args: args{
-				id: 2,
+				id: 3,
 				updatedContact: &model.Contact{
 					Name:   "Test1r",
-					NoTelp: "131-555-1",
+					NoTelp: "131-555-1345",
 				},
 			},
 			want: &model.Contact{
-				ID:     2,
+				ID:     3,
 				Name:   "Test1r",
-				NoTelp: "131-555-1",
+				NoTelp: "131-555-1345",
 			},
 			wantErr: false,
 		},
@@ -203,28 +222,23 @@ func Test_contactJsonRepository_Update(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			contacts := []model.Contact{
-				{ID: 1, Name: "Licht", NoTelp: "123456789"},
-				{ID: 2, Name: "Test1", NoTelp: "131-555-1"},
-			}
+		s.Run(tt.name, func() {
 
-			tempFile := createTempJSONFile(t, contacts)
-			defer os.Remove(tempFile)
+			err := s.repo.(*contactJsonRepository).encodeJSON(s.tempFileName, &model.Contacts)
+			log.Printf("\nencodeJSON err: %v\n", err)
+			s.Require().NoError(err)
 
-			repo := NewContactJsonRepository(tempFile)
-			repo.(*contactJsonRepository).decodeJSON(tempFile, &model.Contacts)
+			got, err := s.repo.Update(tt.args.id, tt.args.updatedContact)
+			log.Printf("\nrepo.Update err: %v\n", err)
 
-			got, err := repo.Update(tt.args.id, tt.args.updatedContact)
-
-			if assert.Equal(t, tt.wantErr, err != nil, "contactJsonRepository.Update() error = %v, wantErr %v", err, tt.wantErr) {
-				assert.Equal(t, tt.want, got, "contactJsonRepository.Update() = %v, want %v", got, tt.want)
+			if s.Equal(tt.wantErr, err != nil, "contactJsonRepository.Update() error = %v, wantErr %v", err, tt.wantErr) {
+				s.Equal(tt.want, got, "contactJsonRepository.Update() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func Test_contactJsonRepository_Delete(t *testing.T) {
+func (s *JsonRepoSuite) Test_contactJsonRepository_Delete() {
 	type args struct {
 		id int64
 	}
@@ -242,23 +256,25 @@ func Test_contactJsonRepository_Delete(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name: "failed",
+			args: args{
+				id: 10,
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			contacts := []model.Contact{
-				{ID: 1, Name: "Licht", NoTelp: "123456789"},
-				{ID: 2, Name: "Test1", NoTelp: "131-555-1"},
-			}
+		s.Run(tt.name, func() {
 
-			tempFile := createTempJSONFile(t, contacts)
-			defer os.Remove(tempFile)
+			err := s.repo.(*contactJsonRepository).encodeJSON(s.tempFileName, &model.Contacts)
+			log.Printf("\nencodeJSON err: %v\n", err)
+			s.Require().NoError(err)
 
-			repo := NewContactJsonRepository(tempFile)
-			repo.(*contactJsonRepository).decodeJSON(tempFile, &model.Contacts)
+			err = s.repo.Delete(tt.args.id)
+			log.Printf("\nrepo.Delete err: %v\n", err)
 
-			err := repo.Delete(tt.args.id)
-
-			assert.Equal(t, tt.wantErr, err != nil, "contactJsonRepository.Delete() error = %v, wantErr %v", err, tt.wantErr)
+			s.Equal(tt.wantErr, err != nil, "contactJsonRepository.Delete() error = %v, wantErr %v", err, tt.wantErr)
 		})
 	}
 }

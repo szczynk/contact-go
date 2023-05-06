@@ -4,12 +4,14 @@ import (
 	"contact-go/config"
 	"contact-go/config/db"
 	"contact-go/handler"
+	"contact-go/helper/input"
 	"contact-go/helper/logger"
 	"contact-go/middleware"
 	"contact-go/repository"
 	"contact-go/usecase"
 	"log"
 	"net/http"
+	"os"
 )
 
 func main() {
@@ -30,8 +32,9 @@ func main() {
 			l.Fatal().Err(err).Msg("server fail to start")
 		}
 	default:
-		contactCLIHandler := handler.NewContactHandler(contactUC)
-		handler.Menu(contactCLIHandler)
+		input := input.NewInputReader(os.Stdin)
+		contactCLIHandler := handler.NewContactHandler(contactUC, input)
+		handler.Menu(contactCLIHandler, input)
 	}
 }
 
@@ -50,7 +53,7 @@ func createContactUsecase(config *config.Config) usecase.ContactUsecase {
 			log.Fatalln("database driver not existed")
 		}
 	case "json":
-		contactRepo = repository.NewContactJsonRepository("data/contact.json")
+		contactRepo = repository.NewContactJsonRepository()
 	default:
 		contactRepo = repository.NewContactRepository()
 	}
