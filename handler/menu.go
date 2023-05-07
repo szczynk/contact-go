@@ -3,8 +3,10 @@ package handler
 import (
 	"contact-go/helper"
 	"contact-go/helper/input"
+	"errors"
 	"fmt"
-	"io"
+	"strconv"
+	"strings"
 )
 
 func Menu(handler ContactHandler, input *input.InputReader) {
@@ -18,14 +20,12 @@ func Menu(handler ContactHandler, input *input.InputReader) {
 
 	for {
 		menuStr, _ := input.Scan()
-		var menu int
-		_, err = fmt.Sscan(menuStr, &menu)
-		if err != nil {
-			if err != io.EOF {
-				fmt.Println(err)
-				break
-			}
+		menu64, err := strconv.ParseInt(strings.TrimSpace(menuStr), 10, 32)
+		if err != nil && !errors.Is(err, strconv.ErrSyntax) {
+			fmt.Println(err)
+			break
 		}
+		menu := int32(menu64)
 
 		if menu == 6 {
 			_ = helper.ClearTerminal()
