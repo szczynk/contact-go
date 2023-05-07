@@ -50,9 +50,7 @@ func (s *InMemoryRepoSuite) Test_contactRepository_List() {
 	}
 	for _, tt := range tests {
 		s.Run(tt.name, func() {
-			repo := NewContactRepository()
-
-			got, err := repo.List()
+			got, err := s.repo.List()
 
 			if s.Equal(tt.wantErr, err != nil, "contactRepository.List() error = %v, wantErr %v", err, tt.wantErr) {
 				s.Equal(tt.want, got, "contactRepository.List() = %v, want %v", got, tt.want)
@@ -90,9 +88,7 @@ func (s *InMemoryRepoSuite) Test_contactRepository_Add() {
 	}
 	for _, tt := range tests {
 		s.Run(tt.name, func() {
-			repo := NewContactRepository()
-
-			got, err := repo.Add(tt.args.newContact)
+			got, err := s.repo.Add(tt.args.newContact)
 
 			if s.Equal(tt.wantErr, err != nil, "contactRepository.Add() error = %v, wantErr %v", err, tt.wantErr) {
 				s.Equal(tt.want, got, "contactRepository.Add() = %v, want %v", got, tt.want)
@@ -135,9 +131,7 @@ func (s *InMemoryRepoSuite) Test_contactRepository_Detail() {
 	}
 	for _, tt := range tests {
 		s.Run(tt.name, func() {
-			repo := NewContactRepository()
-
-			got, err := repo.Detail(tt.args.id)
+			got, err := s.repo.Detail(tt.args.id)
 
 			if s.Equal(tt.wantErr, err != nil, "contactRepository.Detail() error = %v, wantErr %v", err, tt.wantErr) {
 				s.Equal(tt.want, got, "contactRepository.Detail() = %v, want %v", got, tt.want)
@@ -189,9 +183,7 @@ func (s *InMemoryRepoSuite) Test_contactRepository_Update() {
 	}
 	for _, tt := range tests {
 		s.Run(tt.name, func() {
-			repo := NewContactRepository()
-
-			got, err := repo.Update(tt.args.id, tt.args.updatedContact)
+			got, err := s.repo.Update(tt.args.id, tt.args.updatedContact)
 
 			if s.Equal(tt.wantErr, err != nil, "contactRepository.Update() error = %v, wantErr %v", err, tt.wantErr) {
 				s.Equal(tt.want, got, "contactRepository.Update() = %v, want %v", got, tt.want)
@@ -227,9 +219,7 @@ func (s *InMemoryRepoSuite) Test_contactRepository_Delete() {
 	}
 	for _, tt := range tests {
 		s.Run(tt.name, func() {
-			repo := NewContactRepository()
-
-			err := repo.Delete(tt.args.id)
+			err := s.repo.Delete(tt.args.id)
 
 			s.Equal(tt.wantErr, err != nil, "contactRepository.Detail() error = %v, wantErr %v", err, tt.wantErr)
 		})
