@@ -17,30 +17,30 @@ func NewContactJsonRepository() ContactRepository {
 	return repo
 }
 
-func (repo *contactJsonRepository) encodeJSON(path string, contacts *[]model.Contact) error {
-	writer, err := os.Create(path)
+func (repo *contactJsonRepository) encodeJSON() error {
+	writer, err := os.Create(repo.jsonFile)
 	if err != nil {
 		return err
 	}
 	defer writer.Close()
 
 	encoder := json.NewEncoder(writer)
-	err = encoder.Encode(&contacts)
+	err = encoder.Encode(&model.Contacts)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (repo *contactJsonRepository) decodeJSON(path string, contacts *[]model.Contact) error {
-	reader, err := os.Open(path)
+func (repo *contactJsonRepository) decodeJSON() error {
+	reader, err := os.Open(repo.jsonFile)
 	if err != nil {
 		return err
 	}
 	defer reader.Close()
 
 	decoder := json.NewDecoder(reader)
-	err = decoder.Decode(&contacts)
+	err = decoder.Decode(&model.Contacts)
 	if err != nil {
 		return err
 	}
@@ -48,7 +48,7 @@ func (repo *contactJsonRepository) decodeJSON(path string, contacts *[]model.Con
 }
 
 func (repo *contactJsonRepository) List() ([]model.Contact, error) {
-	err := repo.decodeJSON(repo.jsonFile, &model.Contacts)
+	err := repo.decodeJSON()
 	if err != nil {
 		return []model.Contact{}, err
 	}
@@ -94,7 +94,7 @@ func (repo *contactJsonRepository) Add(contact *model.Contact) (*model.Contact, 
 
 	model.Contacts = append(model.Contacts, *newContact)
 
-	err = repo.encodeJSON(repo.jsonFile, &model.Contacts)
+	err = repo.encodeJSON()
 	if err != nil {
 		return nil, err
 	}
@@ -133,7 +133,7 @@ func (repo *contactJsonRepository) Update(id int64, contact *model.Contact) (*mo
 	updatedContact.Name = contact.Name
 	updatedContact.NoTelp = contact.NoTelp
 
-	err = repo.encodeJSON(repo.jsonFile, &model.Contacts)
+	err = repo.encodeJSON()
 	if err != nil {
 		return nil, err
 	}
@@ -149,7 +149,7 @@ func (repo *contactJsonRepository) Delete(id int64) error {
 
 	model.Contacts = append(model.Contacts[:index], model.Contacts[index+1:]...)
 
-	err = repo.encodeJSON(repo.jsonFile, &model.Contacts)
+	err = repo.encodeJSON()
 	if err != nil {
 		return err
 	}

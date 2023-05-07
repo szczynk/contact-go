@@ -12,8 +12,7 @@ import (
 
 type JsonRepoSuite struct {
 	suite.Suite
-	repo         ContactRepository
-	tempFileName string
+	repo ContactRepository
 }
 
 func (s *JsonRepoSuite) SetupSuite() {
@@ -38,13 +37,12 @@ func (s *JsonRepoSuite) SetupSuite() {
 	repo := new(contactJsonRepository)
 	repo.jsonFile = tempFileName
 
-	s.tempFileName = tempFileName
 	s.repo = repo
 }
 
 func (s *JsonRepoSuite) TearDownSuite() {
 	model.Contacts = []model.Contact{}
-	os.Remove(s.tempFileName)
+	os.Remove(s.repo.(*contactJsonRepository).jsonFile)
 }
 
 func TestJsonRepoSuite(t *testing.T) {
@@ -57,7 +55,7 @@ func (s *JsonRepoSuite) Test_contactJsonRepository_List() {
 		want    []model.Contact
 		wantErr bool
 	}{
-		// TODO: Add suiteSetupSuite cases.
+		// TODO: Add test cases.
 		{
 			name: "success",
 			want: []model.Contact{
@@ -70,8 +68,7 @@ func (s *JsonRepoSuite) Test_contactJsonRepository_List() {
 	}
 	for _, tt := range tests {
 		s.Run(tt.name, func() {
-
-			err := s.repo.(*contactJsonRepository).decodeJSON(s.tempFileName, &model.Contacts)
+			err := s.repo.(*contactJsonRepository).decodeJSON()
 			log.Printf("\ndecodeJSON err: %v\n", err)
 			s.Require().NoError(err)
 
@@ -122,7 +119,7 @@ func (s *JsonRepoSuite) Test_contactJsonRepository_Add() {
 			// 	return err
 			// }()
 
-			err := s.repo.(*contactJsonRepository).decodeJSON(s.tempFileName, &model.Contacts)
+			err := s.repo.(*contactJsonRepository).decodeJSON()
 			log.Printf("\ndecodeJSON err: %v\n", err)
 			s.Require().NoError(err)
 
@@ -223,8 +220,7 @@ func (s *JsonRepoSuite) Test_contactJsonRepository_Update() {
 	}
 	for _, tt := range tests {
 		s.Run(tt.name, func() {
-
-			err := s.repo.(*contactJsonRepository).encodeJSON(s.tempFileName, &model.Contacts)
+			err := s.repo.(*contactJsonRepository).encodeJSON()
 			log.Printf("\nencodeJSON err: %v\n", err)
 			s.Require().NoError(err)
 
@@ -266,8 +262,7 @@ func (s *JsonRepoSuite) Test_contactJsonRepository_Delete() {
 	}
 	for _, tt := range tests {
 		s.Run(tt.name, func() {
-
-			err := s.repo.(*contactJsonRepository).encodeJSON(s.tempFileName, &model.Contacts)
+			err := s.repo.(*contactJsonRepository).encodeJSON()
 			log.Printf("\nencodeJSON err: %v\n", err)
 			s.Require().NoError(err)
 
