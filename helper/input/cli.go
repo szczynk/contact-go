@@ -5,7 +5,7 @@ import (
 	"io"
 )
 
-// InputReader is a  implementation of InputReaderI that wraps fmt.Scanln
+// InputReader is a implementation of InputReader that wraps bufio.Scanner
 type InputReader struct {
 	scanner *bufio.Scanner
 }
