@@ -6,7 +6,8 @@ import (
 	"contact-go/model"
 	"contact-go/usecase"
 	"fmt"
-	"io"
+	"strconv"
+	"strings"
 )
 
 type contactHandler struct {
@@ -85,9 +86,8 @@ func (handler *contactHandler) Detail() {
 		return
 	}
 
-	var id int64
-	_, err = fmt.Sscan(idStr, &id)
-	if err != nil && err != io.EOF || id <= 0 {
+	id, err := strconv.ParseInt(strings.TrimSpace(idStr), 10, 64)
+	if err != nil || id <= 0 {
 		fmt.Println("ID yang dimasukkan tidak valid")
 		return
 	}
@@ -112,9 +112,8 @@ func (handler *contactHandler) Update() {
 		return
 	}
 
-	var id int64
-	_, err = fmt.Sscan(idStr, &id)
-	if err != nil && err != io.EOF || id <= 0 {
+	id, err := strconv.ParseInt(strings.TrimSpace(idStr), 10, 64)
+	if err != nil || id <= 0 {
 		fmt.Println("ID yang dimasukkan tidak valid")
 		return
 	}
@@ -158,9 +157,8 @@ func (handler *contactHandler) Delete() {
 		return
 	}
 
-	var id int64
-	_, err = fmt.Sscan(idStr, &id)
-	if err != nil && err != io.EOF || id <= 0 {
+	id, err := strconv.ParseInt(strings.TrimSpace(idStr), 10, 64)
+	if err != nil || id <= 0 {
 		fmt.Println("ID yang dimasukkan tidak valid")
 		return
 	}
