@@ -11,9 +11,9 @@ type contactJsonRepository struct {
 	jsonFile string
 }
 
-func NewContactJsonRepository() ContactRepository {
+func NewContactJsonRepository(jsonFilePath string) ContactRepository {
 	repo := new(contactJsonRepository)
-	repo.jsonFile = "data/contact.json"
+	repo.jsonFile = jsonFilePath
 	return repo
 }
 

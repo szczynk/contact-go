@@ -53,7 +53,8 @@ func createContactUsecase(config *config.Config) usecase.ContactUsecase {
 			log.Fatalln("database driver not existed")
 		}
 	case "json":
-		contactRepo = repository.NewContactJsonRepository()
+		jsonFilePath := "data/contact.json"
+		contactRepo = repository.NewContactJsonRepository(jsonFilePath)
 	default:
 		contactRepo = repository.NewContactRepository()
 	}
