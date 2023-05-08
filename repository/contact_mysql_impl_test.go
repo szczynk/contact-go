@@ -4,7 +4,6 @@ import (
 	"contact-go/model"
 	"database/sql"
 	"errors"
-	"log"
 	"regexp"
 	"testing"
 
@@ -124,7 +123,6 @@ func (s *MysqlRepoSuite) Test_contactMysqlRepository_List() {
 			}
 
 			got, err := s.repo.List()
-			log.Println("case:", tt.name, ", error:", err)
 
 			if s.Equal(tt.wantErr, err != nil, "contactMysqlRepository.List() error = %v, wantErr %v", err, tt.wantErr) {
 				s.Equal(tt.want, got, "contactMysqlRepository.List() = %v, want %v", got, tt.want)
@@ -241,7 +239,6 @@ func (s *MysqlRepoSuite) Test_contactMysqlRepository_Add() {
 			}
 
 			got, err := s.repo.Add(tt.args.contact)
-			log.Println("case:", tt.name, ", error:", err)
 
 			if s.Equal(tt.wantErr, err != nil, "contactMysqlRepository.Add() error = %v, wantErr %v", err, tt.wantErr) {
 				s.Equal(tt.want, got, "contactMysqlRepository.Add() = %v, want %v", got, tt.want)
@@ -325,7 +322,6 @@ func (s *MysqlRepoSuite) Test_contactMysqlRepository_Detail() {
 			}
 
 			got, err := s.repo.Detail(tt.args.id)
-			log.Println("case:", tt.name, ", error:", err)
 
 			if s.Equal(tt.wantErr, err != nil, "contactMysqlRepository.Detail() error = %v, wantErr %v", err, tt.wantErr) {
 				s.Equal(tt.want, got, "contactMysqlRepository.Detail() = %v, want %v", got, tt.want)
@@ -427,7 +423,6 @@ func (s *MysqlRepoSuite) Test_contactMysqlRepository_Update() {
 			}
 
 			got, err := s.repo.Update(tt.args.id, tt.args.contact)
-			log.Println("case:", tt.name, ", error:", err)
 
 			if s.Equal(tt.wantErr, err != nil, "contactMysqlRepository.Update() error = %v, wantErr %v", err, tt.wantErr) {
 				s.Equal(tt.want, got, "contactMysqlRepository.Update() = %v, want %v", got, tt.want)
@@ -502,7 +497,6 @@ func (s *MysqlRepoSuite) Test_contactMysqlRepository_Delete() {
 			}
 
 			err := s.repo.Delete(tt.args.id)
-			log.Println("case:", tt.name, ", error:", err)
 
 			s.Equal(tt.wantErr, err != nil, "contactUsecase.Delete() error = %v, wantErr %v", err, tt.wantErr)
 		})
