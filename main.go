@@ -49,6 +49,12 @@ func createContactUsecase(config *config.Config) usecase.ContactUsecase {
 				log.Fatal(err)
 			}
 			contactRepo = repository.NewContactMysqlRepository(db)
+		case "gorm":
+			db, err := db.NewGormDatabase(config)
+			if err != nil {
+				log.Fatal(err)
+			}
+			contactRepo = repository.NewContactGormRepository(db)
 		default:
 			log.Fatalln("database driver not existed")
 		}

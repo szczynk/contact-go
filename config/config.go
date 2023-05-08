@@ -8,6 +8,7 @@ import (
 
 type Config struct {
 	Port     string   `mapstructure:"port"`
+	Debug    bool     `mapstructure:"debug"`
 	Storage  string   `mapstructure:"storage"`
 	Mode     string   `mapstructure:"mode"`
 	Database Database `mapstructure:"db"`
