@@ -156,11 +156,10 @@ func (s *MysqlRepoSuite) Test_contactMysqlRepository_Add() {
 				},
 			},
 			beforeTest: func(s sqlmock.Sqlmock, query string) {
-				stmt := s.ExpectPrepare(regexp.QuoteMeta(query))
-
 				result := sqlmock.NewResult(1, 1)
 
-				stmt.ExpectExec().
+				s.ExpectPrepare(regexp.QuoteMeta(query)).
+					ExpectExec().
 					WithArgs("test", "555-555-3232").
 					WillReturnResult(result)
 			},
@@ -180,11 +179,10 @@ func (s *MysqlRepoSuite) Test_contactMysqlRepository_Add() {
 				},
 			},
 			beforeTest: func(s sqlmock.Sqlmock, query string) {
-				stmt := s.ExpectPrepare(regexp.QuoteMeta(query))
-
 				err := errors.New("invalid contact")
 
-				stmt.ExpectExec().
+				s.ExpectPrepare(regexp.QuoteMeta(query)).
+					ExpectExec().
 					WithArgs("", "555-555-3232").
 					WillReturnError(err)
 			},
@@ -200,11 +198,10 @@ func (s *MysqlRepoSuite) Test_contactMysqlRepository_Add() {
 				},
 			},
 			beforeTest: func(s sqlmock.Sqlmock, query string) {
-				stmt := s.ExpectPrepare(regexp.QuoteMeta(query))
+				err := errors.New("prepare stmt error")
 
-				err := errors.New("prepare stmt1 error")
-
-				stmt.WillReturnError(err)
+				s.ExpectPrepare(regexp.QuoteMeta(query)).
+					WillReturnError(err)
 			},
 			want:    nil,
 			wantErr: true,
@@ -218,11 +215,10 @@ func (s *MysqlRepoSuite) Test_contactMysqlRepository_Add() {
 				},
 			},
 			beforeTest: func(s sqlmock.Sqlmock, query string) {
-				stmt := s.ExpectPrepare(regexp.QuoteMeta(query))
-
 				result := sqlmock.NewErrorResult(errors.New("last insert id error"))
 
-				stmt.ExpectExec().
+				s.ExpectPrepare(regexp.QuoteMeta(query)).
+					ExpectExec().
 					WithArgs("test", "555-555-3232").
 					WillReturnResult(result)
 			},
@@ -357,11 +353,10 @@ func (s *MysqlRepoSuite) Test_contactMysqlRepository_Update() {
 				},
 			},
 			beforeTest: func(s sqlmock.Sqlmock, query string) {
-				stmt := s.ExpectPrepare(regexp.QuoteMeta(query))
-
 				result := sqlmock.NewResult(1, 1)
 
-				stmt.ExpectExec().
+				s.ExpectPrepare(regexp.QuoteMeta(query)).
+					ExpectExec().
 					WithArgs("jangkrik", "555-555-4000", int64(1)).
 					WillReturnResult(result)
 			},
@@ -382,11 +377,10 @@ func (s *MysqlRepoSuite) Test_contactMysqlRepository_Update() {
 				},
 			},
 			beforeTest: func(s sqlmock.Sqlmock, query string) {
-				stmt := s.ExpectPrepare(regexp.QuoteMeta(query))
-
 				err := errors.New("invalid contact")
 
-				stmt.ExpectExec().
+				s.ExpectPrepare(regexp.QuoteMeta(query)).
+					ExpectExec().
 					WithArgs("test", "555-555-3232", int64(0)).
 					WillReturnError(err)
 
@@ -404,11 +398,10 @@ func (s *MysqlRepoSuite) Test_contactMysqlRepository_Update() {
 				},
 			},
 			beforeTest: func(s sqlmock.Sqlmock, query string) {
-				stmt := s.ExpectPrepare(regexp.QuoteMeta(query))
+				err := errors.New("prepare stmt error")
 
-				err := errors.New("prepare stmt1 error")
-
-				stmt.WillReturnError(err)
+				s.ExpectPrepare(regexp.QuoteMeta(query)).
+					WillReturnError(err)
 			},
 			want:    nil,
 			wantErr: true,
