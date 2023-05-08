@@ -27,7 +27,7 @@ func (repo *contactMysqlRepository) List() ([]model.Contact, error) {
 	var contact model.Contact
 	var err error
 
-	ctx, cancel := db.NewMysqlContext()
+	ctx, cancel := db.NewContext()
 	defer cancel()
 
 	sqlQuery := "SELECT id, name, no_telp FROM contact ORDER BY id ASC"
@@ -61,7 +61,7 @@ func (repo *contactMysqlRepository) List() ([]model.Contact, error) {
 }
 
 func (repo *contactMysqlRepository) Add(contact *model.Contact) (*model.Contact, error) {
-	ctx, cancel := db.NewMysqlContext()
+	ctx, cancel := db.NewContext()
 	defer cancel()
 
 	sqlQuery1 := "INSERT INTO contact(name, no_telp) VALUES (?, ?)"
@@ -93,7 +93,7 @@ func (repo *contactMysqlRepository) Detail(id int64) (*model.Contact, error) {
 	contact := new(model.Contact)
 	var err error
 
-	ctx, cancel := db.NewMysqlContext()
+	ctx, cancel := db.NewContext()
 	defer cancel()
 
 	sqlQuery := "SELECT id, name, no_telp FROM contact WHERE id = ? LIMIT 1"
@@ -113,7 +113,7 @@ func (repo *contactMysqlRepository) Detail(id int64) (*model.Contact, error) {
 }
 
 func (repo *contactMysqlRepository) Update(id int64, contact *model.Contact) (*model.Contact, error) {
-	ctx, cancel := db.NewMysqlContext()
+	ctx, cancel := db.NewContext()
 	defer cancel()
 
 	sqlQuery := "UPDATE contact SET name = ?, no_telp = ? WHERE id = ?"
@@ -137,7 +137,7 @@ func (repo *contactMysqlRepository) Update(id int64, contact *model.Contact) (*m
 }
 
 func (repo *contactMysqlRepository) Delete(id int64) error {
-	ctx, cancel := db.NewMysqlContext()
+	ctx, cancel := db.NewContext()
 	defer cancel()
 
 	sqlQuery := "DELETE FROM contact WHERE id = ?"

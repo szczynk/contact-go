@@ -3,7 +3,6 @@ package db
 import (
 	"contact-go/config"
 	"contact-go/helper/apperrors"
-	"context"
 	"database/sql"
 	"time"
 
@@ -26,8 +25,4 @@ func NewMysqlDatabase(cfg *config.Config) (*sql.DB, error) {
 	db.SetConnMaxLifetime(60 * time.Minute)
 
 	return db, nil
-}
-
-func NewMysqlContext() (context.Context, context.CancelFunc) {
-	return context.WithTimeout(context.Background(), 10*time.Second)
 }
