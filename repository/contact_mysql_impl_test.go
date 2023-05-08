@@ -447,7 +447,7 @@ func (s *MysqlRepoSuite) Test_contactMysqlRepository_Delete() {
 			beforeTest: func(s sqlmock.Sqlmock, query string) {
 				result := sqlmock.NewResult(1, 1)
 
-				s.ExpectPrepare(regexp.QuoteMeta("DELETE FROM contact WHERE id = ?")).
+				s.ExpectPrepare(regexp.QuoteMeta(query)).
 					ExpectExec().
 					WithArgs(int64(1)).
 					WillReturnResult(result)
@@ -460,7 +460,7 @@ func (s *MysqlRepoSuite) Test_contactMysqlRepository_Delete() {
 				id: 0,
 			},
 			beforeTest: func(s sqlmock.Sqlmock, query string) {
-				s.ExpectPrepare(regexp.QuoteMeta("DELETE FROM contact WHERE id = ?")).
+				s.ExpectPrepare(regexp.QuoteMeta(query)).
 					ExpectExec().
 					WithArgs(int64(0)).
 					WillReturnError(sql.ErrNoRows)
@@ -475,7 +475,7 @@ func (s *MysqlRepoSuite) Test_contactMysqlRepository_Delete() {
 			beforeTest: func(s sqlmock.Sqlmock, query string) {
 				err := errors.New("prepare stmt error")
 
-				s.ExpectPrepare(regexp.QuoteMeta("DELETE FROM contact WHERE id = ?")).
+				s.ExpectPrepare(regexp.QuoteMeta(query)).
 					WillReturnError(err)
 			},
 			wantErr: true,
