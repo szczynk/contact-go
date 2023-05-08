@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"log"
 	"net/http"
 )
 
@@ -29,29 +28,29 @@ func (m *Middleware) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	handler.ServeHTTP(w, r)
 }
 
-// Middleware 1
-func Middleware1(w http.ResponseWriter, r *http.Request, next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Println("Middleware 1: Before request")
-		next.ServeHTTP(w, r)
-		log.Println("Middleware 1: After request")
-	})
-}
+//* Middleware 1
+// func Middleware1(w http.ResponseWriter, r *http.Request, next http.Handler) http.Handler {
+// 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+// 		log.Println("Middleware 1: Before request")
+// 		next.ServeHTTP(w, r)
+// 		log.Println("Middleware 1: After request")
+// 	})
+// }
 
-// Middleware 2
-func Middleware2(w http.ResponseWriter, r *http.Request, next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Println("Middleware 2: Before request")
-		next.ServeHTTP(w, r)
-		log.Println("Middleware 2: After request")
-	})
-}
+//* Middleware 2
+// func Middleware2(w http.ResponseWriter, r *http.Request, next http.Handler) http.Handler {
+// 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+// 		log.Println("Middleware 2: Before request")
+// 		next.ServeHTTP(w, r)
+// 		log.Println("Middleware 2: After request")
+// 	})
+// }
 
-// Middleware 3
-func Middleware3(w http.ResponseWriter, r *http.Request, next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Println("Middleware 3: Before request")
-		next.ServeHTTP(w, r)
-		log.Println("Middleware 3: After request")
-	})
-}
+//* Middleware 3
+// func Middleware3(w http.ResponseWriter, r *http.Request, next http.Handler) http.Handler {
+// 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+// 		log.Println("Middleware 3: Before request")
+// 		next.ServeHTTP(w, r)
+// 		log.Println("Middleware 3: After request")
+// 	})
+// }
