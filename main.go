@@ -4,6 +4,7 @@ import (
 	"contact-go/config"
 	"contact-go/config/db"
 	"contact-go/handler"
+	"contact-go/helper"
 	"contact-go/helper/input"
 	"contact-go/helper/logger"
 	"contact-go/middleware"
@@ -34,7 +35,12 @@ func main() {
 	default:
 		input := input.NewInputReader(os.Stdin)
 		contactCLIHandler := handler.NewContactHandler(contactUC, input)
-		handler.Menu(contactCLIHandler, input)
+
+		menu := handler.NewMenu(contactCLIHandler, input, helper.ClearTerminal, helper.ShowMenuList)
+		err := menu.ShowMenu()
+		if err != nil {
+			l.Fatal().Err(err).Msg("server fail to start")
+		}
 	}
 }
 

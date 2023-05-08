@@ -9,17 +9,33 @@ import (
 	"strings"
 )
 
-func Menu(handler ContactHandler, input *input.InputReader) {
+type Menu struct {
+	h            ContactHandler
+	i            *input.InputReader
+	clear        func() error
+	showMenuList func()
+}
+
+func NewMenu(handler ContactHandler, input *input.InputReader, clear func() error, showMenuList func()) *Menu {
+	menu := new(Menu)
+	menu.h = handler
+	menu.i = input
+	menu.clear = clear
+	menu.showMenuList = showMenuList
+
+	return menu
+}
+
+func (m *Menu) ShowMenu() error {
 	err := helper.ClearTerminal()
 	if err != nil {
-		fmt.Println(err)
-		return
+		return err
 	}
 
-	helper.ShowMenuList()
+	m.showMenuList()
 
 	for {
-		menuStr, _ := input.Scan()
+		menuStr, _ := m.i.Scan()
 		menu64, err := strconv.ParseInt(strings.TrimSpace(menuStr), 10, 32)
 		if err != nil && !errors.Is(err, strconv.ErrSyntax) {
 			fmt.Println(err)
@@ -28,24 +44,30 @@ func Menu(handler ContactHandler, input *input.InputReader) {
 		menu := int32(menu64)
 
 		if menu == 6 {
-			_ = helper.ClearTerminal()
+			_ = m.clear
 			break
 		}
 
 		switch menu {
 		default: // case 0 atau selain 0
-			_ = helper.ClearTerminal()
-			helper.ShowMenuList()
+			_ = m.clear
+			m.showMenuList()
 		case 1:
-			handler.List()
+			fmt.Println("Contact list")
+			m.h.List()
 		case 2:
-			handler.Add()
+			fmt.Println("Add a new contact")
+			m.h.Add()
 		case 3:
-			handler.Detail()
+			fmt.Println("Contact detail")
+			m.h.Detail()
 		case 4:
-			handler.Update()
+			fmt.Println("Update a contact")
+			m.h.Update()
 		case 5:
-			handler.Delete()
+			fmt.Println("Delete a contact")
+			m.h.Delete()
 		}
 	}
+	return nil
 }

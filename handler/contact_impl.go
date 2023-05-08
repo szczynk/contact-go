@@ -45,8 +45,6 @@ func (handler *contactHandler) List() {
 func (handler *contactHandler) Add() {
 	_ = helper.ClearTerminal()
 
-	fmt.Println("Add new contact")
-
 	fmt.Print("Name = ")
 	name, err := handler.Input.Scan()
 	if err != nil || name == "" {
@@ -77,8 +75,6 @@ func (handler *contactHandler) Add() {
 func (handler *contactHandler) Detail() {
 	_ = helper.ClearTerminal()
 
-	fmt.Println("Contact Detail")
-
 	fmt.Print("Contact ID = ")
 	idStr, err := handler.Input.Scan()
 	if err != nil {
@@ -102,8 +98,6 @@ func (handler *contactHandler) Detail() {
 
 func (handler *contactHandler) Update() {
 	_ = helper.ClearTerminal()
-
-	fmt.Println("Update a contact")
 
 	fmt.Print("ID = ")
 	idStr, err := handler.Input.Scan()
@@ -147,8 +141,6 @@ func (handler *contactHandler) Update() {
 
 func (handler *contactHandler) Delete() {
 	_ = helper.ClearTerminal()
-
-	fmt.Println("Delete a contact")
 
 	fmt.Print("ID = ")
 	idStr, err := handler.Input.Scan()
