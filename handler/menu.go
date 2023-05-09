@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"contact-go/helper"
 	"contact-go/helper/input"
 	"errors"
 	"fmt"
@@ -27,7 +26,7 @@ func NewMenu(handler ContactHandler, input *input.InputReader, clear func() erro
 }
 
 func (m *Menu) ShowMenu() error {
-	err := helper.ClearTerminal()
+	err := m.clear()
 	if err != nil {
 		return err
 	}
@@ -44,7 +43,7 @@ func (m *Menu) ShowMenu() error {
 		menu := int32(menu64)
 
 		if menu == 6 {
-			_ = m.clear
+			_ = m.clear()
 			break
 		}
 
